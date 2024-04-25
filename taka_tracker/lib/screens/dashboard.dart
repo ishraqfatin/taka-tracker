@@ -14,17 +14,64 @@ class _DashboardScreenState extends State<StatefulWidget> {
   final currentUser = FirebaseAuth.instance.currentUser;
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: SizedBox(
+          child: Row(
+            children: [
+              const Icon(
+                Icons.person,
+                size: 18,
+              ),
+              const SizedBox(
+                width: 10,
+              ),
+              Text(
+                'Welcome, ${currentUser?.email?.split('@')[0]}',
+                style: const TextStyle(
+                  fontSize: 14,
+                ),
+              )
+            ],
+          ),
+        ),
+        primary: true,
+        backgroundColor: Colors.white,
+        actions: [
+          IconButton(
+            iconSize: 20,
+            onPressed: () async {
+              final auth = FirebaseAuth.instance;
+
+              await auth.signOut();
+
+              // Navigate to Sing_in page
+              Navigator.popAndPushNamed(context, '/sign_in');
+            },
+            icon: const Icon(Icons.logout),
+          )
+        ],
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
             const Text("\nExpenses"),
             StreamBuilder(
-              stream: FirebaseFirestore.instance.collection('users').doc(currentUser?.uid).collection('expenses').snapshots(),
+              stream: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(currentUser?.uid)
+                  .collection('expenses')
+                  .snapshots(),
               builder: (BuildContext context, AsyncSnapshot snapshot) {
-                if(snapshot.hasData) {
+                if (snapshot.hasData) {
                   final snap = snapshot.data!.docs;
                   return ListView.builder(
                     shrinkWrap: true,
@@ -83,17 +130,19 @@ class _DashboardScreenState extends State<StatefulWidget> {
           ],
         ),
       ),
-      
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-            // Show the popup screen
-            showModalBottomSheet(
-              context: context,
-              builder: (BuildContext context) => const FormScreen(),
-            );
-          },
+          // Show the popup screen
+          showModalBottomSheet(
+            context: context,
+            builder: (BuildContext context) => const FormScreen(),
+          );
+        },
         backgroundColor: const Color.fromARGB(255, 25, 25, 25),
-        child: const Icon(Icons.add, color: Colors.white,),
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
+        ),
       ),
     );
   }

@@ -18,6 +18,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   final auth = FirebaseAuth.instance;
 
+  bool _setLoading = false;
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -222,41 +224,39 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         }
 
                         //API here...
-                        await auth
-                            .createUserWithEmailAndPassword(
-                                email: _emailController.text.trim(),
-                                password: _passwordController.text.trim())
-                            .then((value) => {
-                                  if (value.user != null)
-                                    {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                          showCloseIcon: true,
-                                          backgroundColor:
-                                              Color.fromARGB(255, 4, 144, 97),
-                                          content:
-                                              Text('Successfully Signed Up!'),
-                                        ),
-                                      ),
-                                      _emailController.clear(),
-                                      _passwordController.clear(),
-                                      _confirmPasswordController.clear(),
-                                    }
-                                  else
-                                    {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                          showCloseIcon: true,
-                                          backgroundColor:
-                                              Color.fromARGB(255, 144, 4, 4),
-                                          content:
-                                              Text('Something went wrong :('),
-                                        ),
-                                      ),
-                                    }
-                                });
+                        try {
+                          setState(() {
+                            _setLoading = true;
+                          });
+                          await auth.createUserWithEmailAndPassword(
+                            email: _emailController.text.trim(),
+                            password: _passwordController.text.trim(),
+                          );
+                          setState(() {
+                            _setLoading = false;
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              showCloseIcon: true,
+                              backgroundColor: Color.fromARGB(255, 4, 144, 97),
+                              content: Text('Successfully Signed Up!'),
+                            ),
+                          );
+                          _emailController.clear();
+                          _passwordController.clear();
+                          _confirmPasswordController.clear();
+                        } catch (error) {
+                          setState(() {
+                            _setLoading = false;
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              showCloseIcon: true,
+                              backgroundColor: Color.fromARGB(255, 144, 4, 4),
+                              content: Text('Something went wrong :('),
+                            ),
+                          );
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
@@ -266,10 +266,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      child: const Text(
-                        'Sign Up',
-                        style: TextStyle(fontSize: 18, fontFamily: 'Roboto'),
-                      ),
+                      child: _setLoading
+                          ? const CircularProgressIndicator(
+                              // value: 1.0,
+                              backgroundColor: Colors.white,
+                              color: Color.fromARGB(255, 10, 149, 91),
+                            )
+                          : const Text(
+                              'Sign Up',
+                              style:
+                                  TextStyle(fontSize: 18, fontFamily: 'Roboto'),
+                            ),
                     ),
                     const SizedBox(height: 20),
                     Row(
