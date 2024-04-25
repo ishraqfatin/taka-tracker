@@ -1,8 +1,11 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:taka_tracker/screens/auth/sign_in.dart';
 import 'package:taka_tracker/screens/auth/sign_up.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const MyApp());
 }
 
@@ -22,8 +25,8 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/sign_in',
       routes: {
-        '/sign_in': (context) => SignInScreen(),
-        '/sign_up': (context) => SignUpScreen(),
+        '/sign_in': (context) => const SignInScreen(),
+        '/sign_up': (context) => const SignUpScreen(),
       },
     );
   }

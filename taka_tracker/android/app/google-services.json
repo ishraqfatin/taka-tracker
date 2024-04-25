@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "788184960386",
+    "project_id": "taka-tracker-60aa2",
+    "storage_bucket": "taka-tracker-60aa2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:788184960386:android:5478cdf552bc1eef40939b",
+        "android_client_info": {
+          "package_name": "com.example.taka_tracker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzpjAHC1Mr6cNm_lCaxyY9FHISfUGsAUg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
