@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:taka_tracker/services/utils/validators.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -10,11 +12,15 @@ class SignUpScreen extends StatefulWidget {
 class _SignUpScreenState extends State<SignUpScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
+  final auth = FirebaseAuth.instance;
+
   @override
   void dispose() {
+    _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
@@ -101,6 +107,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                     const SizedBox(height: 50),
                     TextField(
+                      controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
                         hintText: 'Email',
@@ -115,7 +122,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         ),
                       ),
                       style: const TextStyle(
-                          color: Colors.black, fontFamily: 'Roboto'),
+                        color: Colors.black,
+                        fontFamily: 'Roboto',
+                      ),
                     ),
                     const SizedBox(height: 10),
                     TextField(
@@ -175,7 +184,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                     const SizedBox(height: 20),
                     ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
+                        if (ValidatorClass()
+                                .validateEmail(_emailController.text) !=
+                            null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              backgroundColor: Color.fromARGB(255, 144, 4, 4),
+                              showCloseIcon: true,
+                              content: Text('Enter a valid Email'),
+                            ),
+                          );
+                          return;
+                        }
                         if (!_validatePassword(_passwordController.text)) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
@@ -200,7 +221,42 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           return;
                         }
 
-                        // Need to add API here...
+                        //API here...
+                        await auth
+                            .createUserWithEmailAndPassword(
+                                email: _emailController.text.trim(),
+                                password: _passwordController.text.trim())
+                            .then((value) => {
+                                  if (value.user != null)
+                                    {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          showCloseIcon: true,
+                                          backgroundColor:
+                                              Color.fromARGB(255, 4, 144, 97),
+                                          content:
+                                              Text('Successfully Signed Up!'),
+                                        ),
+                                      ),
+                                      _emailController.clear(),
+                                      _passwordController.clear(),
+                                      _confirmPasswordController.clear(),
+                                    }
+                                  else
+                                    {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          showCloseIcon: true,
+                                          backgroundColor:
+                                              Color.fromARGB(255, 144, 4, 4),
+                                          content:
+                                              Text('Something went wrong :('),
+                                        ),
+                                      ),
+                                    }
+                                });
                       },
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,

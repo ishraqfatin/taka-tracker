@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:taka_tracker/services/utils/validators.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -9,10 +11,22 @@ class SignInScreen extends StatefulWidget {
 
 class _SignInScreenState extends State<SignInScreen> {
   bool _obscurePassword = true;
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  final auth = FirebaseAuth.instance;
 
   @override
   void initState() {
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+
+    super.dispose();
   }
 
   void _togglePasswordVisibility() {
@@ -79,6 +93,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     ),
                     const SizedBox(height: 50),
                     TextField(
+                      controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
                         hintText: 'Email',
@@ -97,6 +112,8 @@ class _SignInScreenState extends State<SignInScreen> {
                     ),
                     const SizedBox(height: 20),
                     TextField(
+                      controller: _passwordController,
+                      keyboardType: TextInputType.visiblePassword,
                       decoration: InputDecoration(
                         hintText: 'Password',
                         hintStyle: TextStyle(color: Colors.grey.shade600),
@@ -121,8 +138,54 @@ class _SignInScreenState extends State<SignInScreen> {
                     ),
                     const SizedBox(height: 30),
                     ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
+                        if (ValidatorClass()
+                                .validateEmail(_emailController.text) !=
+                            null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              backgroundColor: Color.fromARGB(255, 144, 4, 4),
+                              showCloseIcon: true,
+                              content: Text('Enter a valid Email'),
+                            ),
+                          );
+                          return;
+                        }
                         // Add API here...
+
+                        await auth
+                            .signInWithEmailAndPassword(
+                                email: _emailController.text.trim(),
+                                password: _passwordController.text.trim())
+                            .then((value) => {
+                                  if (value.user != null)
+                                    {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          showCloseIcon: true,
+                                          backgroundColor:
+                                              Color.fromARGB(255, 4, 144, 97),
+                                          content: Text('Success!'),
+                                        ),
+                                      ),
+                                      _emailController.clear(),
+                                      _passwordController.clear(),
+                                    }
+                                  else
+                                    {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          showCloseIcon: true,
+                                          backgroundColor:
+                                              Color.fromARGB(255, 144, 4, 4),
+                                          content:
+                                              Text('Something went wrong :('),
+                                        ),
+                                      ),
+                                    }
+                                });
                       },
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
