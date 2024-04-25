@@ -171,7 +171,10 @@ class _SignInScreenState extends State<SignInScreen> {
                                       ),
                                       _emailController.clear(),
                                       _passwordController.clear(),
-                                    }
+                                      
+                                      // Navigate to FormScreen
+                                      Navigator.pushReplacementNamed(context, '/dashboard'),
+                                      }
                                   else
                                     {
                                       ScaffoldMessenger.of(context)

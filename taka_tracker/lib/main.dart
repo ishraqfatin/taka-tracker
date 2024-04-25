@@ -1,5 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:taka_tracker/screens/auth/dashboard.dart';
+import 'package:taka_tracker/screens/auth/form.dart';
 import 'package:taka_tracker/screens/auth/sign_in.dart';
 import 'package:taka_tracker/screens/auth/sign_up.dart';
 
@@ -27,6 +29,8 @@ class MyApp extends StatelessWidget {
       routes: {
         '/sign_in': (context) => const SignInScreen(),
         '/sign_up': (context) => const SignUpScreen(),
+        '/form': (context) => const FormScreen(),
+        '/dashboard': (context) => const DashboardScreen(),
       },
     );
   }
