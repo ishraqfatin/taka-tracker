@@ -91,8 +91,11 @@ class _FormScreenState extends State<FormScreen> {
               ElevatedButton(
                 onPressed: () {
                   int price = int.tryParse(priceController.text) ?? 0;                  
+                  
                   UserExpense userExpense = UserExpense(name: nameController.text, category: selectedCategory, time: selectedDate, price: price);
+                  
                   databaseService.addExpense(userExpense: userExpense);
+                  
                   Navigator.pop(context);
                 },
                 child: const Text('Submit'),
