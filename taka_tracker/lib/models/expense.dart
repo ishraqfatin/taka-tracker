@@ -1,9 +1,4 @@
-// To parse this JSON data, do
-//
-//     final userExpense = userExpenseFromMap(jsonString);
-
 import 'dart:convert';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 UserExpense userExpenseFromMap(String str) => UserExpense.fromMap(json.decode(str));
 List<UserExpense> userExpenseListFromMap(String str) => List<UserExpense>.from(json.decode(str).map((x) => UserExpense.fromMap(x)));
@@ -13,7 +8,7 @@ String userExpenseListToMap(List<UserExpense> data) => json.encode(List<dynamic>
 class UserExpense {
   String name;
   String category;
-  DateTime time;
+  DateTime? time;
   int price;
 
   UserExpense({

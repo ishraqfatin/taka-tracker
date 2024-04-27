@@ -1,4 +1,3 @@
-import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,9 +7,9 @@ class DatabaseService {
   final auth = FirebaseAuth.instance;
   final firebase = FirebaseFirestore.instance;
 
-  Future<void> addExpense({
-    required UserExpense userExpense}) async {
-    String? userId = auth.currentUser?.uid;{
+  Future<void> addExpense({required UserExpense userExpense}) async {
+    String? userId = auth.currentUser?.uid;
+    {
       await firebase
           .collection('users')
           .doc(userId)
@@ -19,7 +18,7 @@ class DatabaseService {
     }
   }
 
-Future<UserExpense> getExpenseById(String userExpenseId) async {
+  Future<UserExpense> getExpenseById(String userExpenseId) async {
     String? userId = FirebaseAuth.instance.currentUser?.uid;
     DocumentSnapshot expenseSnapshot = await FirebaseFirestore.instance
         .collection('users')
@@ -27,28 +26,34 @@ Future<UserExpense> getExpenseById(String userExpenseId) async {
         .collection('expenses')
         .doc(userExpenseId)
         .get();
-        
-    Map<String, dynamic> jsonData = expenseSnapshot.data() as Map<String, dynamic>;
+
+    Map<String, dynamic> jsonData =
+        expenseSnapshot.data() as Map<String, dynamic>;
 
     UserExpense userExpense = UserExpense.fromMap(jsonData);
-      
-      return userExpense;
-}
 
-  Future<void> updateExpense(String userExpenseId, UserExpense userExpense) async {
-    String? userId = auth.currentUser?.uid;{
+    return userExpense;
+  }
+
+  Future<void> updateExpense(
+      {required UserExpense userExpense, required userExpenseId}) async {
+    String? userId = auth.currentUser?.uid;
+
+    try {
       await firebase
           .collection('users')
           .doc(userId)
           .collection('expenses')
           .doc(userExpenseId)
-          .update(userExpense.toMap());
-    }
+          .update(userExpense.toMap())
+          .then((value) => value);
+    } catch (error) {}
+
   }
 
-
   Future<void> deleteExpense(String userExpenseId) async {
-    String? userId = auth.currentUser?.uid;{
+    String? userId = auth.currentUser?.uid;
+    {
       await firebase
           .collection('users')
           .doc(userId)
