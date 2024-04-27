@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:taka_tracker/widgets/line_chart.dart';
 import 'package:taka_tracker/models/expense.dart';
 import 'package:taka_tracker/services/database.dart';
 import 'form.dart';
@@ -68,6 +69,10 @@ class _DashboardScreenState extends State<StatefulWidget> {
       //CRUD operations through List
       body: Column(
         children: [
+          SizedBox(
+            height: 250,
+            child: CustomLineChart(),
+          ),
           Expanded(
             child: StreamBuilder(
               stream: firebase.collection('users').doc(currentUser!.uid).collection('expenses').orderBy('time').snapshots(),
@@ -106,11 +111,11 @@ class _DashboardScreenState extends State<StatefulWidget> {
                                 children: [
                                   Text(
                                     userExpensesData[index]['name'],
-                                    style: TextStyle(color: Colors.black), // Set color to black
+                                    style: const TextStyle(color: Colors.black), // Set color to black
                                   ),
                                   Text(
                                     '${userExpensesData[index]['price']} TK',
-                                    style: TextStyle(color: Colors.green), // Set color to green
+                                    style: const TextStyle(color: Colors.green), // Set color to green
                                   ),
                                 ],
                                   ),
@@ -134,6 +139,7 @@ class _DashboardScreenState extends State<StatefulWidget> {
         ]
       ),
       floatingActionButton: FloatingActionButton(
+        shape: CircleBorder(),
         onPressed: () {
           showModalBottomSheet(
             context: context,
@@ -144,6 +150,21 @@ class _DashboardScreenState extends State<StatefulWidget> {
         child: const Icon(
           Icons.add,
           color: Colors.white,
+        ),
+      ),
+      bottomNavigationBar: BottomAppBar(
+        shape: CircularNotchedRectangle(),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            IconButton(onPressed: () {}, icon: Icon(Icons.home)),
+            Opacity(
+                opacity: 0.0,
+                child: IconButton(
+                    onPressed: () {},
+                    icon: Icon(Icons.menu))),
+            IconButton(onPressed: () {}, icon: Icon(Icons.menu)),
+          ],
         ),
       ),
     );
