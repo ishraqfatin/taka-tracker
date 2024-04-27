@@ -41,7 +41,6 @@ class _FormScreenState extends State<FormScreen> {
     selectedDate = widget.expense != null
         ? widget.expense.data()["time"].toDate()
         : DateTime.now();
-    print(widget.expense.id);
   }
 
   void _presentDatePicker() async {
