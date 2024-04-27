@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:taka_tracker/widgets/line_chart.dart';
 import 'form.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -63,6 +64,10 @@ class _DashboardScreenState extends State<StatefulWidget> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
+            SizedBox(
+              height: 250,
+              child: CustomLineChart(),
+            ),
             const Text("\nExpenses"),
             StreamBuilder(
               stream: FirebaseFirestore.instance

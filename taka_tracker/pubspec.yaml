@@ -43,6 +43,7 @@ dependencies:
   firebase_app_check: ^0.2.1+12
   font_awesome_flutter: ^10.1.0
   google_fonts: ^6.1.0
+  fl_chart: ^0.67.0
 
 
 dev_dependencies:
