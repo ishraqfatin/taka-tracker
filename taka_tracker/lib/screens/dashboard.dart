@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:taka_tracker/models/expense.dart';
+import 'package:taka_tracker/services/database.dart';
 import 'form.dart';
+import 'package:intl/intl.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key});
@@ -12,6 +15,8 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<StatefulWidget> {
   final currentUser = FirebaseAuth.instance.currentUser;
+  final databaseService = DatabaseService();
+  final firebase = FirebaseFirestore.instance;
 
   @override
   void initState() {
@@ -59,80 +64,77 @@ class _DashboardScreenState extends State<StatefulWidget> {
           )
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            const Text("\nExpenses"),
-            StreamBuilder(
-              stream: FirebaseFirestore.instance
-                  .collection('users')
-                  .doc(currentUser?.uid)
-                  .collection('expenses')
-                  .snapshots(),
-              builder: (BuildContext context, AsyncSnapshot snapshot) {
+
+      //CRUD operations through List
+      body: Column(
+        children: [
+          Expanded(
+            child: StreamBuilder(
+              stream: firebase.collection('users').doc(currentUser!.uid).collection('expenses').orderBy('time').snapshots(),
+              builder: (context, AsyncSnapshot snapshot) {
                 if (snapshot.hasData) {
-                  final snap = snapshot.data!.docs;
-                  return ListView.builder(
-                    shrinkWrap: true,
-                    primary: false,
-                    itemCount: snap.length,
-                    itemBuilder: (context, index) {
-                      return Container(
-                        height: 70,
-                        width: double.infinity,
-                        margin: const EdgeInsets.only(bottom: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black26,
-                              offset: Offset(2, 2),
-                              blurRadius: 10,
-                            ),
-                          ],
-                        ),
-                        child: Stack(
-                          children: [
-                            Container(
-                              margin: const EdgeInsets.only(left: 20),
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                snap[index]['name'],
-                                style: const TextStyle(
-                                  color: Colors.black54,
-                                  fontWeight: FontWeight.bold,
+                  var userExpensesData = snapshot.data.docs;
+                  return userExpensesData.length != 0
+                    ? ListView.builder(
+                      itemCount: userExpensesData.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.all(2.0),
+                          child: Material(
+                            elevation: 2, // Elevation for the box shadow
+                            shadowColor: Colors.grey.withOpacity(0.5), // Shadow color
+                            borderRadius: BorderRadius.circular(10), 
+                            child: InkWell(
+                              onTap: () {
+                                showModalBottomSheet(
+                                  context: context,
+                                  builder: (BuildContext context) => const FormScreen(),
+                                );
+                              },
+                              onLongPress: ()
+                              {databaseService.deleteExpense(userExpensesData[index].id);},
+                              splashColor: Colors.yellow,
+                              highlightColor: Colors.red,
+                              child: Container(
+                                decoration: const BoxDecoration (
+                                color: Colors.white10,
+                                ),
+                                child: ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+                                  title: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    userExpensesData[index]['name'],
+                                    style: TextStyle(color: Colors.black), // Set color to black
+                                  ),
+                                  Text(
+                                    '${userExpensesData[index]['price']} TK',
+                                    style: TextStyle(color: Colors.green), // Set color to green
+                                  ),
+                                ],
+                                  ),
                                 ),
                               ),
-                            ),
-                            Container(
-                              margin: const EdgeInsets.only(right: 20),
-                              alignment: Alignment.centerRight,
-                              child: Text(
-                                "\$${snap[index]['price']}",
-                                style: TextStyle(
-                                  color: Colors.green.withOpacity(0.7),
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  );
-                } else {
-                  return const SizedBox();
-                }
+                            )
+                          )
+                        );
+                      },
+                    )
+                  : const Center(
+                    child: Text("Add an expense!"));
+          } else {
+            return const Center(
+              child: CircularProgressIndicator(), // Loading indicator
+                );
+          }
               },
-            )
-          ],
-        ),
+            ),
+          )
+        ]
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Show the popup screen
           showModalBottomSheet(
             context: context,
             builder: (BuildContext context) => const FormScreen(),

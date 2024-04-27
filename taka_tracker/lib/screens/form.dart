@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:taka_tracker/models/expense.dart';
+import 'package:taka_tracker/services/database.dart';
 
 class FormScreen extends StatefulWidget {
   const FormScreen({super.key});
@@ -10,45 +12,11 @@ class FormScreen extends StatefulWidget {
 }
 
 class _FormScreenState extends State<FormScreen> {
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _priceController = TextEditingController();
-  String _selectedCategory = "Food"; // Initial category value
-  DateTime _selectedDate = DateTime.now(); // Initial date value
-
-  // Function to submit the form and add the document to Firestore
-  void _submitForm() {
-    if (_formKey.currentState!.validate()) {
-      // Form is valid, proceed to add document
-      final currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser != null) {
-        FirebaseFirestore.instance.collection('users').doc(currentUser.uid).collection('expenses').add({
-          'name': _nameController.text,
-          'category': _selectedCategory,
-          'price': double.parse(_priceController.text),
-          'timestamp': Timestamp.fromDate(_selectedDate),
-          'userId': currentUser.uid,
-        }).then((_) {
-          // Document added successfully
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Expense added successfully'),
-          ));
-          // Clear form fields after submission
-          _nameController.clear();
-          _priceController.clear();
-          setState(() {
-            _selectedCategory = "Food"; // Reset category value
-            _selectedDate = DateTime.now(); // Reset date value
-          });
-        }).catchError((error) {
-          // Handle error
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('Error adding document: $error'),
-          ));
-        });
-      }
-    }
-  }
+  final DatabaseService databaseService = DatabaseService();
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController priceController = TextEditingController();
+  String selectedCategory = "Food"; // Initial category value
+  DateTime selectedDate = DateTime.now(); // Initial date value
 
   @override
   Widget build(BuildContext context) {
@@ -59,11 +27,10 @@ class _FormScreenState extends State<FormScreen> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
-          key: _formKey,
           child: ListView(
             children: [
               TextFormField(
-                controller: _nameController,
+                controller: nameController,
                 decoration: const InputDecoration(labelText: 'Name'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -73,10 +40,10 @@ class _FormScreenState extends State<FormScreen> {
                 },
               ),
               DropdownButtonFormField<String>(
-                value: _selectedCategory,
+                value: selectedCategory,
                 onChanged: (String? newValue) {
                   setState(() {
-                    _selectedCategory = newValue!;
+                    selectedCategory = newValue!;
                   });
                 },
                 items: <String>['Food', 'Bills', 'Travel', 'Shopping']
@@ -89,7 +56,7 @@ class _FormScreenState extends State<FormScreen> {
                 decoration: const InputDecoration(labelText: 'Category'),
               ),
               TextFormField(
-                controller: _priceController,
+                controller: priceController,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 decoration: const InputDecoration(labelText: 'Price'),
                 validator: (value) {
@@ -102,18 +69,18 @@ class _FormScreenState extends State<FormScreen> {
                   return null;
                 },
               ),
-              Text('Date: ${_selectedDate.toString()}'),
+              Text('Date: ${selectedDate.toString()}'),
               ElevatedButton(
                 onPressed: () {
                   showDatePicker(
                     context: context,
-                    initialDate: _selectedDate,
+                    initialDate: selectedDate,
                     firstDate: DateTime(2000),
                     lastDate: DateTime.now(),
                   ).then((date) {
                     if (date != null) {
                       setState(() {
-                        _selectedDate = date;
+                        selectedDate = date;
                       });
                     }
                   });
@@ -122,7 +89,12 @@ class _FormScreenState extends State<FormScreen> {
               ),
               const SizedBox(height: 16.0),
               ElevatedButton(
-                onPressed: _submitForm,
+                onPressed: () {
+                  int price = int.tryParse(priceController.text) ?? 0;                  
+                  UserExpense userExpense = UserExpense(name: nameController.text, category: selectedCategory, time: selectedDate, price: price);
+                  databaseService.addExpense(userExpense: userExpense);
+                  Navigator.pop(context);
+                },
                 child: const Text('Submit'),
               ),
             ],
