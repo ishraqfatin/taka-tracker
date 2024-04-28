@@ -6,10 +6,11 @@ import 'package:taka_tracker/services/database.dart';
 final formatter = DateFormat.yMd();
 
 class FormScreen extends StatefulWidget {
-  const FormScreen({super.key, this.expense, this.expenseIndex});
+  const FormScreen({super.key, this.expense, this.expenseIndex, this.onExpenseAddedOrUpdated});
 
   final expense;
   final expenseIndex;
+  final Function()? onExpenseAddedOrUpdated;
 
   @override
   State<FormScreen> createState() => _FormScreenState();
@@ -154,6 +155,7 @@ class _FormScreenState extends State<FormScreen> {
               ),
               const SizedBox(height: 16.0),
               widget.expense == null
+              //ADD
                   ? ElevatedButton(
                       onPressed: () {
                         int price = int.tryParse(priceController.text) ?? 0;
@@ -167,9 +169,11 @@ class _FormScreenState extends State<FormScreen> {
                         databaseService.addExpense(userExpense: userExpense);
 
                         Navigator.pop(context);
+                        widget.onExpenseAddedOrUpdated!();
                       },
                       child: const Text('Submit'),
                     )
+                    //UPDATE
                   : ElevatedButton(
                       onPressed: () {
                         int price = int.tryParse(priceController.text) ?? 0;
@@ -185,6 +189,7 @@ class _FormScreenState extends State<FormScreen> {
                             userExpenseId: widget.expense.id);
 
                         Navigator.pop(context);
+                        widget.onExpenseAddedOrUpdated!();
                       },
                       child: const Text('Update'),
                     ),

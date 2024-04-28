@@ -1,43 +1,42 @@
 import 'dart:convert';
-
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+
 class CustomBarChart extends StatefulWidget {
-  const CustomBarChart({super.key});
+final String jsonData;
+
+const CustomBarChart({super.key, required this.jsonData});
 
   @override
   State<CustomBarChart> createState() => _CustomBarChartState();
 }
 
 class _CustomBarChartState extends State<CustomBarChart> {
-  String jsonData = '''
-  {
-    "data": [
-      {"item": "food", "price": 23},
-      {"item": "transport", "price": 45},
-      {"item": "bills", "price": 200},
-      {"item": "movies", "price": 150}
-    ]
-  }
-  ''';
-
+ 
   @override
   Widget build(BuildContext context) {
-    Map<String, dynamic> jsonMap = json.decode(jsonData);
+
+    if (widget.jsonData.isEmpty) {
+      return const Center(child: CircularProgressIndicator(),);
+    }
+    
+    Map<String, dynamic> jsonMap = json.decode(widget.jsonData);
     List<dynamic> dataList = jsonMap['data'];
 
     String getItemAtIndex(int index) {
       if (index >= 0 && index < dataList.length) {
-        return dataList[index]['item'];
+        return dataList[index]['category'];
       } else {
         return 'Index out of range';
       }
     }
 
+
+
     IconData getCategoryIcon(int index) {
       IconData iconData = Icons.error;
-      String category = dataList[index]['item']!;
+      String category = dataList[index]['category']!;
 
       switch (category) {
         case 'food':
@@ -59,34 +58,47 @@ class _CustomBarChartState extends State<CustomBarChart> {
       return iconData;
     }
 
-    List<BarChartGroupData> getBarChartGroupData() {
-      List<BarChartGroupData> barChartGroup = [];
+  List<BarChartGroupData> getBarChartGroupData() {
+    Map<String, int> categoryTotals = {}; // Map to store category totals
 
-      for (int i = 0; i < dataList.length; i++) {
-        // String item = dataList[i]['item'];
-        int price = dataList[i]['price'];
-        barChartGroup.add(BarChartGroupData(
-          showingTooltipIndicators: [0],
-          x: i,
-          barRods: [
-            BarChartRodData(
-                color: Color.fromARGB(255, 49, 231, 119),
-                width: 10,
-                toY: price.toDouble(),
-                backDrawRodData: BackgroundBarChartRodData(
-                    color: const Color.fromARGB(255, 220, 15, 15),
-                    toY: 0.500,
-                    show: false))
-          ],
-        ));
+    for (int i = 0; i < dataList.length; i++) {
+      String category = dataList[i]['category'];
+      int? price = dataList[i]['price'] as int?;
+      // total price calculation
+      if (price != null) {
+        if (categoryTotals.containsKey(category)) {
+          categoryTotals[category] = (categoryTotals[category] ?? 0) + price;
+        } else {
+          categoryTotals[category] = price;
+        }
       }
-
-      return barChartGroup;
-
-      // return [
-      //   BarChartGroupData(x: 1, barRods: [BarChartRodData(toY: 40)])
-      // ];
     }
+
+    List<BarChartGroupData> barChartGroup = [];
+
+    //category wise bars
+    categoryTotals.forEach((category, total) {
+      barChartGroup.add(BarChartGroupData(
+        showingTooltipIndicators: [0],
+        x: barChartGroup.length,
+        barRods: [
+          BarChartRodData(
+            color: Color.fromARGB(255, 49, 231, 119),
+            width: 10,
+            toY: total.toDouble(),
+            backDrawRodData: BackgroundBarChartRodData(
+              color: const Color.fromARGB(255, 220, 15, 15),
+              toY: 0.500,
+              show: false,
+            ),
+          ),
+        ],
+      ));
+    });
+
+    return barChartGroup;
+  }
+
 
     double getMaxY() {
       return 250.0;
