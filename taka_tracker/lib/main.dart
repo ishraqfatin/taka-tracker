@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:taka_tracker/screens/dashboard.dart';
 import 'package:taka_tracker/screens/form.dart';
 import 'package:taka_tracker/screens/auth/sign_in.dart';
@@ -20,8 +21,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
+      title: 'TakaTracker',
       theme: ThemeData(
+        fontFamily: GoogleFonts.raleway().fontFamily,
+        fontFamilyFallback: GoogleFonts.openSans().fontFamilyFallback,
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
         useMaterial3: true,
       ),

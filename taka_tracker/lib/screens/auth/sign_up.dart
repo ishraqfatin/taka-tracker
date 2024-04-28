@@ -12,6 +12,7 @@ class SignUpScreen extends StatefulWidget {
 class _SignUpScreenState extends State<SignUpScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -22,10 +23,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   void dispose() {
+    super.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
-    super.dispose();
+    _usernameController.dispose();
   }
 
   void _togglePasswordVisibility() {
@@ -84,6 +86,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     const SizedBox(height: 10),
                     const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
                           'Taka',
@@ -108,6 +111,27 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ],
                     ),
                     const SizedBox(height: 50),
+                    TextField(
+                      controller: _usernameController,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: InputDecoration(
+                        hintText: 'Username',
+                        hintStyle: TextStyle(color: Colors.grey.shade600),
+                        filled: true,
+                        fillColor: Colors.white.withOpacity(0.5),
+                        prefixIcon:
+                            const Icon(Icons.email, color: Colors.black),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontFamily: 'Roboto',
+                      ),
+                    ),
+                    const SizedBox(height: 10),
                     TextField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
@@ -187,6 +211,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: () async {
+                        FocusScope.of(context).unfocus();
+                        
                         if (ValidatorClass()
                                 .validateEmail(_emailController.text) !=
                             null) {
@@ -231,7 +257,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           await auth.createUserWithEmailAndPassword(
                             email: _emailController.text.trim(),
                             password: _passwordController.text.trim(),
-                          );
+                              )
+                              .then(
+                                (res) => {
+                                  if (res.user != null)
+                                    {
+                                      res.user!.updateDisplayName(
+                                          _usernameController.text)
+                                    }
+                                },
+                              );
                           setState(() {
                             _setLoading = false;
                           });
@@ -268,7 +303,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                       child: _setLoading
                           ? const CircularProgressIndicator(
-                              // value: 1.0,
                               backgroundColor: Colors.white,
                               color: Color.fromARGB(255, 10, 149, 91),
                             )

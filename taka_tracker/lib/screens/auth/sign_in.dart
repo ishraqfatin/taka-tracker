@@ -142,9 +142,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     ElevatedButton(
                       onPressed: () async {
                         FocusScope.of(context).unfocus();
-
                         
-
                         if (ValidatorClass()
                                 .validateEmail(_emailController.text) !=
                             null) {
