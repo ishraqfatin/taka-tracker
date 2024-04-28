@@ -27,7 +27,16 @@ class _DashboardScreenState extends State<StatefulWidget> {
     'This year',
   ];
 
+  var _expenseListItems = [
+    'Categories',
+    'Food',
+    'Transport',
+    'Bills',
+    'Movies',
+  ];
+
   String _selectedBarChartFilter = 'This month';
+  String _selectedExpenseListItem = 'Categories';
 
   @override
   void initState() {
@@ -193,13 +202,51 @@ class _DashboardScreenState extends State<StatefulWidget> {
           const SizedBox(
             height: 20,
           ),
-          const Text(
-            "Expenses",
-            style: TextStyle(
-              color: Color.fromARGB(255, 4, 73, 3),
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Roboto',
+          Padding(
+            padding: const EdgeInsets.only(left: 20, right: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "Expenses",
+                  style: TextStyle(
+                    color: Color.fromARGB(255, 4, 73, 3),
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Roboto',
+                  ),
+                ),
+                // DROP DOWN MENU
+                Container(
+                    width: 120,
+                    height: 40,
+                    decoration: const BoxDecoration(
+                        color: Color.fromARGB(252, 66, 124, 86),
+                        borderRadius: BorderRadius.all(Radius.circular(20))),
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        left: 14.0,
+                      ),
+                      child: DropdownButton(
+                        dropdownColor: Color.fromARGB(252, 66, 124, 86),
+                        items: _expenseListItems.map((String item) {
+                          return DropdownMenuItem(
+                              value: item, child: Text(item));
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedExpenseListItem = value!;
+                          });
+                        },
+                        icon: const Icon(Icons.keyboard_arrow_down),
+                        value: _selectedExpenseListItem,
+                        style: const TextStyle(color: Colors.white),
+                        underline: Container(),
+                        iconEnabledColor:
+                            const Color.fromARGB(255, 255, 255, 255),
+                      ),
+                    )),
+              ],
             ),
           ),
           Expanded(
@@ -237,6 +284,9 @@ class _DashboardScreenState extends State<StatefulWidget> {
                                           ),
                                         );
                                       },
+                                      backgroundColor: Colors.transparent,
+                                      foregroundColor:
+                                          Color.fromARGB(252, 66, 124, 86),
                                       icon: Icons.edit,
                                     ),
 
@@ -265,6 +315,8 @@ class _DashboardScreenState extends State<StatefulWidget> {
                                               }),
                                         );
                                       },
+                                      backgroundColor: Colors.transparent,
+                                      foregroundColor: Colors.red,
                                       icon: Icons.delete,
                                     )
                                   ],
