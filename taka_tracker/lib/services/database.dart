@@ -16,7 +16,9 @@ class DatabaseService {
           .doc(userId)
           .collection('expenses')
           .add(userExpense.toMap());
-    } catch (error) {}
+    } catch (error) {
+      print(error);
+    }
   }
 
   Future<UserExpense> getExpenseById(String userExpenseId) async {
@@ -73,19 +75,21 @@ class DatabaseService {
         .collection('expenses')
         .get();
 
-    List<Map<String, dynamic>> dataList = [];
+    if (snapshot.docs.isNotEmpty) {
+      List<Map<String, dynamic>> dataList = [];
 
-    for (var doc in snapshot.docs) {
-      dataList.add({
-        "category": doc['category'],
-        "price": doc['price'],
-      });
+      for (var doc in snapshot.docs) {
+        dataList.add({
+          "category": doc['category'],
+          "price": doc['price'],
+        });
+      }
+
+      Map<String, dynamic> jsonData = {
+        "data": dataList,
+      };
+      return json.encode(jsonData);
     }
-
-    Map<String, dynamic> jsonData = {
-      "data": dataList,
-    };
-
-    return json.encode(jsonData);
+    return '';
   }
 }

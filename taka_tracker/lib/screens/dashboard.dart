@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:taka_tracker/models/expense.dart';
 import 'package:taka_tracker/widgets/bar_chart.dart';
 import 'package:taka_tracker/services/database.dart';
 import 'form.dart';
@@ -10,7 +11,7 @@ import 'package:intl/intl.dart';
 final formatter = DateFormat.yMd();
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({Key? key});
+  const DashboardScreen({super.key});
 
   @override
   State<StatefulWidget> createState() => _DashboardScreenState();
@@ -20,6 +21,7 @@ class _DashboardScreenState extends State<StatefulWidget> {
   final currentUser = FirebaseAuth.instance.currentUser;
   final databaseService = DatabaseService();
   final firebase = FirebaseFirestore.instance;
+
   String jsonData = '';
 
   @override
@@ -32,10 +34,13 @@ class _DashboardScreenState extends State<StatefulWidget> {
     try {
       String fetchedData =
           await DatabaseService().mapUserExpenseSnapshotToChartJson();
+
       setState(() {
         jsonData = fetchedData;
       });
-    } catch (error) {}
+    } catch (error) {
+      print(error);
+    }
   }
 
   final _barCharItems = [
@@ -57,13 +62,12 @@ class _DashboardScreenState extends State<StatefulWidget> {
 
   String _getGreeting() {
     var hour = DateTime.now().hour;
-    String? userName = currentUser?.email?.split('@')[0];
     if (hour < 12) {
-      return 'Good morning, $userName';
+      return 'Good morning, ';
     } else if (hour < 17) {
-      return 'Good afternoon, $userName';
+      return 'Good afternoon, ';
     } else {
-      return 'Good evening, $userName';
+      return 'Good evening, ';
     }
   }
 
@@ -72,107 +76,144 @@ class _DashboardScreenState extends State<StatefulWidget> {
     String greeting = _getGreeting();
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color.fromARGB(
+        255,
+        198,
+        227,
+        216,
+      ),
       appBar: AppBar(
-        title: const Row(
+        title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Taka',
-              style: TextStyle(
-                color: Color.fromARGB(255, 79, 211, 127),
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Roboto',
-              ),
-              textAlign: TextAlign.center,
+              greeting,
+              style: const TextStyle(fontSize: 20.0, color: Colors.white),
             ),
             Text(
-              'Tracker',
-              style: TextStyle(
-                color: Color.fromARGB(255, 97, 167, 236),
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Roboto',
+              currentUser!.displayName.toString(),
+              style: const TextStyle(
+                fontSize: 20.0,
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
               ),
-              textAlign: TextAlign.center,
-            ),
+            )
           ],
         ),
         primary: true,
-        backgroundColor: const Color.fromARGB(255, 0, 22, 8),
+        backgroundColor: const Color.fromARGB(255, 17, 25, 19),
       ),
 
       //CRUD operations through List
       body: Stack(children: [
         Container(
           decoration: const BoxDecoration(
-            color: Color.fromARGB(255, 0, 22, 8),
+            color: Color.fromARGB(255, 17, 25, 19),
             borderRadius: BorderRadius.only(
               bottomLeft: Radius.circular(30.0),
               bottomRight: Radius.circular(30.0),
             ),
           ),
           child: Column(children: [
+            const SizedBox(
+              height: 20,
+            ),
             Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                greeting,
-                style: const TextStyle(fontSize: 24.0, color: Colors.white),
+              padding: const EdgeInsets.all(10.0),
+              child: IntrinsicHeight(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    const Column(
+                      children: [
+                        Text(
+                          'You have spent',
+                          style: TextStyle(fontSize: 16.0, color: Colors.white),
+                        ),
+                        Text(
+                          '2500 Tk',
+                          style: TextStyle(
+                            fontSize: 35.0,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const VerticalDivider(
+                      thickness: 3,
+                      indent: 8,
+                      endIndent: 8,
+                      color: Color.fromARGB(255, 38, 75, 54),
+                    ),
+
+                    // DROP DOWN MENU
+                    Container(
+                      width: 120,
+                      height: 40,
+                      decoration: const BoxDecoration(
+                          color: Color.fromARGB(254, 72, 89, 78),
+                          borderRadius: BorderRadius.all(Radius.circular(10))),
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          left: 14.0,
+                        ),
+                        child: DropdownButton(
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(10),
+                          ),
+                          dropdownColor: const Color.fromARGB(254, 72, 89, 78),
+                          items: _barCharItems.map((String item) {
+                            return DropdownMenuItem(
+                              value: item,
+                              child: Text(item),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedBarChartFilter = value!;
+                            });
+                          },
+                          icon: const Icon(Icons.keyboard_arrow_down),
+                          value: _selectedBarChartFilter,
+                          style: const TextStyle(color: Colors.white),
+                          underline: Container(),
+                          iconEnabledColor:
+                              const Color.fromARGB(255, 255, 255, 255),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(
-              height: 20,
-            ),
-            const Text(
-              'You have spent',
-              style: TextStyle(fontSize: 18.0, color: Colors.white),
-            ),
-            const Text(
-              '2500 Tk',
-              style: TextStyle(
-                  fontSize: 40.0,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold),
-            ),
-            // DROP DOWN MENU
-            Container(
-                width: 120,
-                height: 40,
-                decoration: const BoxDecoration(
-                    color: Color.fromARGB(254, 72, 89, 78),
-                    borderRadius: BorderRadius.all(Radius.circular(20))),
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                    left: 14.0,
-                  ),
-                  child: DropdownButton(
-                    dropdownColor: const Color.fromARGB(254, 72, 89, 78),
-                    items: _barCharItems.map((String item) {
-                      return DropdownMenuItem(value: item, child: Text(item));
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedBarChartFilter = value!;
-                      });
-                    },
-                    icon: const Icon(Icons.keyboard_arrow_down),
-                    value: _selectedBarChartFilter,
-                    style: const TextStyle(color: Colors.white),
-                    underline: Container(),
-                    iconEnabledColor: const Color.fromARGB(255, 255, 255, 255),
-                  ),
-                )),
-            const SizedBox(
-              height: 50,
+              height: 70,
             ),
             SizedBox(
-              height: 170,
-              child: CustomBarChart(jsonData: jsonData),
-            ),
-            const SizedBox(
-              height: 20,
-            ),
+              height: 220,
+              child: jsonData != ""
+                  ? CustomBarChart(jsonData: jsonData)
+                  : const Column(
+                      children: [
+                        Text(
+                          "Nothing to show for now :'(",
+                          style: TextStyle(
+                            color: Color.fromARGB(255, 106, 171, 123),
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        Icon(
+                          Icons.not_interested_sharp,
+                          color: Color.fromARGB(255, 106, 171, 123),
+                        )
+                      ],
+                    ),
+            )
           ]),
         ),
         DraggableScrollableSheet(
@@ -181,11 +222,15 @@ class _DashboardScreenState extends State<StatefulWidget> {
             maxChildSize: 0.8,
             builder: (context, scrollController) => ClipRRect(
                   borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20)),
+                      topLeft: Radius.circular(40),
+                      topRight: Radius.circular(40)),
                   child: Container(
-                    color: Colors
-                        .blue, // EITA hocche draggable container er bg color
+                    color: const Color.fromARGB(
+                      255,
+                      198,
+                      227,
+                      216,
+                    ), // EITA hocche draggable container er bg color
                     child: ListView(
                       controller: scrollController,
                       children: <Widget>[ExpenseListDrawer()],
@@ -216,8 +261,11 @@ class _DashboardScreenState extends State<StatefulWidget> {
         ),
       ),
       bottomNavigationBar: BottomAppBar(
-        height: 58,
+        color: Color.fromARGB(255, 165, 198, 187),
+        elevation: 20,
+        height: 55,
         shape: const CircularNotchedRectangle(),
+        shadowColor: Color.fromARGB(255, 45, 50, 48),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
@@ -225,17 +273,20 @@ class _DashboardScreenState extends State<StatefulWidget> {
                 onPressed: () {
                   Navigator.popAndPushNamed(context, '/dashboard');
                 },
+                color: Color.fromARGB(255, 36, 46, 41),
                 icon: const Icon(Icons.home)),
             Opacity(
-                opacity: 0.0,
-                child: IconButton(
-                    onPressed: () {},
-                    icon: const Icon(Icons
-                        .menu))), // I want this icon button to be invisible and unclickable
+              opacity: .0,
+              child: IconButton(
+                onPressed: () {},
+                icon: const Icon(Icons.menu),
+              ),
+            ),
             IconButton(
                 onPressed: () {
                   Navigator.popAndPushNamed(context, '/menu');
                 },
+                color: Color.fromARGB(255, 36, 46, 41),
                 icon: const Icon(Icons.menu)),
           ],
         ),
@@ -268,14 +319,14 @@ class _DashboardScreenState extends State<StatefulWidget> {
                   width: 120,
                   height: 40,
                   decoration: const BoxDecoration(
-                      color: Color.fromARGB(252, 66, 124, 86),
+                      color: Color.fromARGB(251, 23, 65, 46),
                       borderRadius: BorderRadius.all(Radius.circular(20))),
                   child: Padding(
                     padding: const EdgeInsets.only(
                       left: 14.0,
                     ),
                     child: DropdownButton(
-                      dropdownColor: const Color.fromARGB(252, 66, 124, 86),
+                      dropdownColor: Color.fromARGB(251, 23, 65, 46),
                       items: _expenseListItems.map((String item) {
                         return DropdownMenuItem(value: item, child: Text(item));
                       }).toList(),
@@ -310,13 +361,12 @@ class _DashboardScreenState extends State<StatefulWidget> {
                       shrinkWrap: true, // ! EITA ONEK JORURI BAKKO
                       physics:
                           const NeverScrollableScrollPhysics(), // ! EITAO ONEK JORURI
-
                       itemCount: userExpensesData.length,
                       itemBuilder: (context, index) {
                         return Slidable(
                           key: ValueKey(index),
                           endActionPane: ActionPane(
-                            extentRatio: 0.25,
+                            // extentRatio: 0.25,
                             motion: const StretchMotion(),
                             children: [
                               //UPDATE
@@ -346,6 +396,16 @@ class _DashboardScreenState extends State<StatefulWidget> {
                               //DELETE
                               SlidableAction(
                                 onPressed: (context) {
+                                  UserExpense userExpense = UserExpense(
+                                    name: userExpensesData[index]['name'],
+                                    category: userExpensesData[index]
+                                        ['category'],
+                                    time: userExpensesData[index]['time']
+                                        .toDate(),
+                                    price: userExpensesData[index]['price'],
+                                  );
+
+
                                   databaseService
                                       .deleteExpense(userExpensesData[index].id)
                                       .then((value) {
@@ -353,21 +413,43 @@ class _DashboardScreenState extends State<StatefulWidget> {
                                     getChartData();
                                   });
 
-                                  SnackBar(
-                                    duration: const Duration(seconds: 3),
-                                    content: const Text("Expense Deleted"),
-                                    action: SnackBarAction(
-                                        label: 'Undo',
-                                        onPressed: () {
-                                          setState(
-                                            () {
-                                              databaseService.addExpense(
-                                                  userExpense:
-                                                      userExpensesData[index]
-                                                          .id);
-                                            },
-                                          );
-                                        }),
+                                  // Show Undo Snackbar
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      backgroundColor:
+                                          Color.fromARGB(255, 21, 21, 21),
+                                      duration: const Duration(seconds: 5),
+                                      content: const Text(
+                                        "Expense Deleted",
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                      width: 300.0, // Width of the SnackBar.
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal:
+                                            15.0, // Inner padding for SnackBar content.
+                                      ),
+                                      behavior: SnackBarBehavior.floating,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10.0),
+                                      ),
+                                      action: SnackBarAction(
+                                          textColor:
+                                              Colors.lightGreenAccent[400],
+                                          label: 'Undo',
+                                          onPressed: () {
+                                            setState(
+                                              () {
+                                                databaseService.addExpense(
+                                                    userExpense: userExpense);
+
+                                                // Update the jsonData
+                                                getChartData();
+                                              },
+                                              
+                                            );
+                                          }),
+                                    ),
                                   );
                                 },
                                 backgroundColor: Colors.transparent,
@@ -378,10 +460,11 @@ class _DashboardScreenState extends State<StatefulWidget> {
                           ),
                           child: Card(
                             margin: const EdgeInsets.all(10),
-                            elevation: 6,
+                            elevation: 20,
+                            color: Color.fromARGB(255, 36, 46, 41),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 15, vertical: 20),
+                                  horizontal: 15, vertical: 12),
                               child: Column(
                                 children: [
                                   Row(
@@ -389,17 +472,18 @@ class _DashboardScreenState extends State<StatefulWidget> {
                                         MainAxisAlignment.spaceBetween,
                                     children: [
                                       SizedBox(
-                                        width: 250,
+                                        width: 210,
                                         child: Text(
                                           userExpensesData[index]['name'],
                                           overflow: TextOverflow.ellipsis,
                                           maxLines: 1,
                                           softWrap: false,
                                           style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14,
-                                              color: Colors
-                                                  .black), // Set color to black
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 18,
+                                            color: Color.fromARGB(
+                                                255, 216, 216, 216),
+                                          ),
                                         ),
                                       ),
                                       Expanded(
@@ -407,8 +491,15 @@ class _DashboardScreenState extends State<StatefulWidget> {
                                           textAlign: TextAlign.end,
                                           '${userExpensesData[index]['price']} TK',
                                           style: const TextStyle(
-                                              color: Colors
-                                                  .green), // Set color to green
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 20,
+                                            color: Color.fromARGB(
+                                              255,
+                                              198,
+                                              227,
+                                              216,
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -421,8 +512,8 @@ class _DashboardScreenState extends State<StatefulWidget> {
                                                 ['time']
                                             .toDate()),
                                         style: const TextStyle(
-                                            color: Color.fromARGB(255, 114, 115,
-                                                114)), // Set color to green
+                                            color: Color.fromARGB(
+                                                255, 232, 232, 232)),
                                       ),
                                     ],
                                   )

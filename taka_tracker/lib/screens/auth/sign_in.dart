@@ -174,10 +174,21 @@ class _SignInScreenState extends State<SignInScreen> {
 
                           // If login is successful
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
+                            SnackBar(
                               showCloseIcon: true,
-                              backgroundColor: Color.fromARGB(255, 4, 144, 97),
-                              content: Text('Login Successfull!'),
+                              backgroundColor:
+                                  const Color.fromARGB(255, 9, 108, 75),
+                              content: const Text('Login Successfull!'),
+                              width: 280.0, // Width of the SnackBar.
+                              padding: const EdgeInsets.symmetric(
+                                horizontal:
+                                    8.0, // Inner padding for SnackBar content.
+                              ),
+                              behavior: SnackBarBehavior.floating,
+
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
                             ),
                           );
 
@@ -192,10 +203,21 @@ class _SignInScreenState extends State<SignInScreen> {
                             _setLoading = false;
                           });
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
+                            SnackBar(
                               showCloseIcon: true,
-                              backgroundColor: Color.fromARGB(255, 144, 4, 4),
-                              content: Text('Invalid Email or Password!'),
+                              backgroundColor:
+                                  const Color.fromARGB(255, 144, 4, 4),
+                              content: const Text('Invalid Email or Password!'),
+                              width: 280.0, // Width of the SnackBar.
+                              padding: const EdgeInsets.symmetric(
+                                horizontal:
+                                    8.0, // Inner padding for SnackBar content.
+                              ),
+                              behavior: SnackBarBehavior.floating,
+
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
                             ),
                           );
                         }

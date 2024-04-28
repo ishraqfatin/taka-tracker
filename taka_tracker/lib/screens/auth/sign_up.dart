@@ -120,7 +120,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         filled: true,
                         fillColor: Colors.white.withOpacity(0.5),
                         prefixIcon:
-                            const Icon(Icons.email, color: Colors.black),
+                            const Icon(Icons.person, color: Colors.black),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                           borderSide: BorderSide.none,
@@ -130,6 +130,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         color: Colors.black,
                         fontFamily: 'Roboto',
                       ),
+                      
                     ),
                     const SizedBox(height: 10),
                     TextField(
@@ -212,7 +213,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ElevatedButton(
                       onPressed: () async {
                         FocusScope.of(context).unfocus();
-                        
+                        if (ValidatorClass()
+                                .validateUserName(_usernameController.text) !=
+                            null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              backgroundColor: Color.fromARGB(255, 144, 4, 4),
+                              showCloseIcon: true,
+                              content: Text('Enter a Username'),
+                            ),
+                          );
+                          return;
+                        }
                         if (ValidatorClass()
                                 .validateEmail(_emailController.text) !=
                             null) {
@@ -240,10 +252,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         if (!_validateConfirmPassword(
                             _confirmPasswordController.text)) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
+                            SnackBar(
                               showCloseIcon: true,
-                              backgroundColor: Color.fromARGB(255, 144, 4, 4),
-                              content: Text('Passwords do not match.'),
+                              backgroundColor:
+                                  const Color.fromARGB(255, 144, 4, 4),
+                              content: const Text('Passwords do not match.'),
+                              width: 280.0, // Width of the SnackBar.
+                              padding: const EdgeInsets.symmetric(
+                                horizontal:
+                                    8.0, // Inner padding for SnackBar content.
+                              ),
+                              behavior: SnackBarBehavior.floating,
+
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
                             ),
                           );
                           return;
@@ -271,10 +294,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             _setLoading = false;
                           });
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
+                            SnackBar(
                               showCloseIcon: true,
-                              backgroundColor: Color.fromARGB(255, 4, 144, 97),
-                              content: Text('Successfully Signed Up!'),
+                              backgroundColor:
+                                  const Color.fromARGB(255, 4, 144, 97),
+                              content: const Text('Successfully Signed Up!'),
+                              width: 280.0, // Width of the SnackBar.
+                              padding: const EdgeInsets.symmetric(
+                                horizontal:
+                                    8.0, // Inner padding for SnackBar content.
+                              ),
+                              behavior: SnackBarBehavior.floating,
+
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
                             ),
                           );
                           _emailController.clear();
@@ -285,10 +319,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             _setLoading = false;
                           });
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
+                            SnackBar(
                               showCloseIcon: true,
-                              backgroundColor: Color.fromARGB(255, 144, 4, 4),
-                              content: Text('Something went wrong :('),
+                              backgroundColor:
+                                  const Color.fromARGB(255, 144, 4, 4),
+                              content: const Text('Something went wrong :('),
+                              width: 280.0, // Width of the SnackBar.
+                              padding: const EdgeInsets.symmetric(
+                                horizontal:
+                                    8.0, // Inner padding for SnackBar content.
+                              ),
+                              behavior: SnackBarBehavior.floating,
+
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
                             ),
                           );
                         }
