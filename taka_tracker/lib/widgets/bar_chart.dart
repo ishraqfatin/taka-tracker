@@ -40,7 +40,7 @@ class _CustomBarChartState extends State<CustomBarChart> {
       List<BarChartGroupData> barChartGroup = [];
 
       for (int i = 0; i < dataList.length; i++) {
-        String item = dataList[i]['item'];
+        // String item = dataList[i]['item'];
         int price = dataList[i]['price'];
         barChartGroup.add(BarChartGroupData(
           showingTooltipIndicators: [0],

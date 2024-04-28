@@ -21,6 +21,14 @@ class _DashboardScreenState extends State<StatefulWidget> {
   final databaseService = DatabaseService();
   final firebase = FirebaseFirestore.instance;
 
+  var _barCharItems = [
+    'This week',
+    'This month',
+    'This year',
+  ];
+
+  String _selectedBarChartFilter = 'This month';
+
   @override
   void initState() {
     super.initState();
@@ -112,8 +120,6 @@ class _DashboardScreenState extends State<StatefulWidget> {
         color: Color.fromARGB(255, 169, 219, 187),
         child: Column(children: [
           Container(
-            // HEY CHAT GPT, round the bottom two corners of this container
-
             decoration: const BoxDecoration(
               color: Color.fromARGB(255, 0, 22, 8),
               borderRadius: BorderRadius.only(
@@ -124,13 +130,9 @@ class _DashboardScreenState extends State<StatefulWidget> {
             child: Column(children: [
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  children: [
-                    Text(
-                      greeting,
-                      style: TextStyle(fontSize: 24.0, color: Colors.white),
-                    ),
-                  ],
+                child: Text(
+                  greeting,
+                  style: TextStyle(fontSize: 24.0, color: Colors.white),
                 ),
               ),
               const SizedBox(
@@ -142,14 +144,49 @@ class _DashboardScreenState extends State<StatefulWidget> {
               ),
               const Text(
                 '2500 Tk',
-                style: TextStyle(fontSize: 40.0, color: Colors.white),
+                style: TextStyle(
+                    fontSize: 40.0,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold),
+              ),
+              // DROP DOWN MENU
+              Container(
+                  width: 120,
+                  height: 40,
+                  decoration: const BoxDecoration(
+                      color: Color.fromARGB(254, 72, 89, 78),
+                      borderRadius: BorderRadius.all(Radius.circular(20))),
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      left: 14.0,
+                    ),
+                    child: DropdownButton(
+                      dropdownColor: const Color.fromARGB(254, 72, 89, 78),
+                      items: _barCharItems.map((String item) {
+                        return DropdownMenuItem(value: item, child: Text(item));
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedBarChartFilter = value!;
+                        });
+                      },
+                      icon: const Icon(Icons.keyboard_arrow_down),
+                      value: _selectedBarChartFilter,
+                      style: const TextStyle(color: Colors.white),
+                      underline: Container(),
+                      iconEnabledColor:
+                          const Color.fromARGB(255, 255, 255, 255),
+                    ),
+                  )),
+              const SizedBox(
+                height: 50,
               ),
               const SizedBox(
-                height: 30,
-              ),
-              const SizedBox(
-                height: 250,
+                height: 170,
                 child: CustomBarChart(),
+              ),
+              const SizedBox(
+                height: 20,
               ),
             ]),
           ),
