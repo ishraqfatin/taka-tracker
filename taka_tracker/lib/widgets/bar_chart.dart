@@ -23,10 +23,10 @@ class _CustomBarChartState extends State<CustomBarChart> {
   // String jsonData = '''
   // {
   //   "data": [
-  //     {"item": "Food", "price": 23},
+  //     {"item": "food", "price": 23},
   //     {"item": "transport", "price": 45},
   //     {"item": "bills", "price": 200},
-  //     {"item": "Movies", "price": 150}
+  //     {"item": "movies", "price": 150}
   //   ]
   // }
   // ''';
@@ -56,6 +56,32 @@ class _CustomBarChartState extends State<CustomBarChart> {
       } else {
         return 'Index out of range';
       }
+    }
+
+
+
+    IconData getCategoryIcon(int index) {
+      IconData iconData = Icons.error;
+      String category = dataList[index]['item']!;
+
+      switch (category) {
+        case 'food':
+          iconData = Icons.restaurant_outlined;
+          break;
+        case 'transport':
+          iconData = Icons.directions_car;
+          break;
+        case 'bills':
+          iconData = Icons.attach_money;
+          break;
+        case 'movies':
+          iconData = Icons.camera_outlined;
+          break;
+        default:
+          break;
+      }
+
+      return iconData;
     }
 
   List<BarChartGroupData> getBarChartGroupData() {
@@ -123,12 +149,19 @@ class _CustomBarChartState extends State<CustomBarChart> {
                 titlesData: FlTitlesData(
                   bottomTitles: AxisTitles(
                       sideTitles: SideTitles(
-                    showTitles: true,
-                    getTitlesWidget: (value, meta) => Text(
-                      getItemAtIndex(value.toInt()),
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  )),
+                          showTitles: true,
+                          getTitlesWidget: (value, meta) => Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Icon(
+                                  getCategoryIcon(value.toInt()),
+                                  color: Colors.white,
+                                ),
+                              )
+                          //     Text(
+                          //   getItemAtIndex(value.toInt()),
+                          //   style: TextStyle(color: Colors.white),
+                          // ),
+                          )),
                   topTitles: const AxisTitles(
                     sideTitles: SideTitles(showTitles: false),
                   ),
