@@ -13,33 +13,7 @@ const CustomBarChart({super.key, required this.jsonData});
 }
 
 class _CustomBarChartState extends State<CustomBarChart> {
-  // String jsonData = '';
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   getData();
-  // }
-  // String jsonData = '''
-  // {
-  //   "data": [
-  //     {"item": "food", "price": 23},
-  //     {"item": "transport", "price": 45},
-  //     {"item": "bills", "price": 200},
-  //     {"item": "movies", "price": 150}
-  //   ]
-  // }
-  // ''';
-
-//   void getData() async {
-//   try {
-//     String fetchedData = await DatabaseService().mapUserExpenseSnapshotToChartJson();
-//     setState(() {
-//       jsonData = fetchedData;
-//     });
-//   } catch (error) {}
-// }
-
+ 
   @override
   Widget build(BuildContext context) {
 
@@ -52,7 +26,7 @@ class _CustomBarChartState extends State<CustomBarChart> {
 
     String getItemAtIndex(int index) {
       if (index >= 0 && index < dataList.length) {
-        return dataList[index]['item'];
+        return dataList[index]['category'];
       } else {
         return 'Index out of range';
       }
@@ -62,7 +36,7 @@ class _CustomBarChartState extends State<CustomBarChart> {
 
     IconData getCategoryIcon(int index) {
       IconData iconData = Icons.error;
-      String category = dataList[index]['item']!;
+      String category = dataList[index]['category']!;
 
       switch (category) {
         case 'food':
@@ -88,14 +62,14 @@ class _CustomBarChartState extends State<CustomBarChart> {
     Map<String, int> categoryTotals = {}; // Map to store category totals
 
     for (int i = 0; i < dataList.length; i++) {
-      String item = dataList[i]['item'];
+      String category = dataList[i]['category'];
       int? price = dataList[i]['price'] as int?;
       // total price calculation
       if (price != null) {
-        if (categoryTotals.containsKey(item)) {
-          categoryTotals[item] = (categoryTotals[item] ?? 0) + price;
+        if (categoryTotals.containsKey(category)) {
+          categoryTotals[category] = (categoryTotals[category] ?? 0) + price;
         } else {
-          categoryTotals[item] = price;
+          categoryTotals[category] = price;
         }
       }
     }
@@ -103,7 +77,7 @@ class _CustomBarChartState extends State<CustomBarChart> {
     List<BarChartGroupData> barChartGroup = [];
 
     //category wise bars
-    categoryTotals.forEach((item, total) {
+    categoryTotals.forEach((category, total) {
       barChartGroup.add(BarChartGroupData(
         showingTooltipIndicators: [0],
         x: barChartGroup.length,

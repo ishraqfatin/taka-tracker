@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:taka_tracker/models/expense.dart';
@@ -50,11 +49,10 @@ class DatabaseService {
           .update(userExpense.toMap())
           .then((value) => value);
     } catch (error) {}
-
   }
 
   Future<void> deleteExpense(String userExpenseId) async {
-  // String? userId = auth.currentUser?.uid;
+    // String? userId = auth.currentUser?.uid;
 
     try {
       await firebase
@@ -69,13 +67,17 @@ class DatabaseService {
   Future<String> mapUserExpenseSnapshotToChartJson() async {
     // String? userId = auth.currentUser?.uid;
 
-    QuerySnapshot snapshot = await firebase.collection('users').doc(userId).collection('expenses').get();
+    QuerySnapshot snapshot = await firebase
+        .collection('users')
+        .doc(userId)
+        .collection('expenses')
+        .get();
 
     List<Map<String, dynamic>> dataList = [];
 
     for (var doc in snapshot.docs) {
       dataList.add({
-        "item": doc['category'],
+        "category": doc['category'],
         "price": doc['price'],
       });
     }
@@ -86,5 +88,4 @@ class DatabaseService {
 
     return json.encode(jsonData);
   }
-
 }
