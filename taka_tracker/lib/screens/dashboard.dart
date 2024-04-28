@@ -20,6 +20,23 @@ class _DashboardScreenState extends State<StatefulWidget> {
   final currentUser = FirebaseAuth.instance.currentUser;
   final databaseService = DatabaseService();
   final firebase = FirebaseFirestore.instance;
+  String jsonData = '';
+
+  @override
+  void initState() {
+    super.initState();
+    getChartData();
+  }
+
+  void getChartData() async {
+  try {
+    String fetchedData = await DatabaseService().mapUserExpenseSnapshotToChartJson();
+    setState(() {
+      jsonData = fetchedData;
+    });
+  } catch (error) {}
+}
+
 
   var _barCharItems = [
     'This week',
@@ -28,11 +45,6 @@ class _DashboardScreenState extends State<StatefulWidget> {
   ];
 
   String _selectedBarChartFilter = 'This month';
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   String _getGreeting() {
     var hour = DateTime.now().hour;
@@ -181,9 +193,9 @@ class _DashboardScreenState extends State<StatefulWidget> {
               const SizedBox(
                 height: 50,
               ),
-              const SizedBox(
+              SizedBox(
                 height: 170,
-                child: CustomBarChart(),
+                child: CustomBarChart(jsonData: jsonData),
               ),
               const SizedBox(
                 height: 20,
@@ -232,9 +244,15 @@ class _DashboardScreenState extends State<StatefulWidget> {
                                           context: context,
                                           builder: (BuildContext context) =>
                                               FormScreen(
-                                            expense: userExpensesData[index],
-                                            expenseIndex: index,
-                                          ),
+                                                expense: userExpensesData[index],
+                                                expenseIndex: index,
+                                                onExpenseAddedOrUpdated: () {
+                                                  // setState updates the chart data
+                                                  setState(() {
+                                                    getChartData();
+                                                  });
+                                                },
+                                              ),
                                         );
                                       },
                                       icon: Icons.edit,
@@ -244,7 +262,11 @@ class _DashboardScreenState extends State<StatefulWidget> {
                                     SlidableAction(
                                       onPressed: (context) {
                                         databaseService.deleteExpense(
-                                            userExpensesData[index].id);
+                                            userExpensesData[index].id).then((value) {
+                                              // Update the jsonData
+                                              getChartData();
+                                            }
+                                          );
 
                                         SnackBar(
                                           duration: const Duration(seconds: 3),
@@ -346,11 +368,14 @@ class _DashboardScreenState extends State<StatefulWidget> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
         shape: const CircleBorder(),
+        //ADD
         onPressed: () {
           // Show the popup screen
           showModalBottomSheet(
             context: context,
-            builder: (BuildContext context) => FormScreen(),
+            builder: (BuildContext context) => FormScreen(onExpenseAddedOrUpdated: () {setState(() {
+              getChartData();
+            });}),
           );
         },
         backgroundColor: const Color.fromARGB(255, 25, 25, 25),

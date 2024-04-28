@@ -1,31 +1,53 @@
 import 'dart:convert';
-
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+
 
 class CustomBarChart extends StatefulWidget {
-  const CustomBarChart({super.key});
+final String jsonData;
+
+const CustomBarChart({super.key, required this.jsonData});
 
   @override
   State<CustomBarChart> createState() => _CustomBarChartState();
 }
 
 class _CustomBarChartState extends State<CustomBarChart> {
-  String jsonData = '''
-  {
-    "data": [
-      {"item": "Food", "price": 23},
-      {"item": "transport", "price": 45},
-      {"item": "bills", "price": 200},
-      {"item": "Movies", "price": 150}
-    ]
-  }
-  ''';
+  // String jsonData = '';
+
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   getData();
+  // }
+  // String jsonData = '''
+  // {
+  //   "data": [
+  //     {"item": "Food", "price": 23},
+  //     {"item": "transport", "price": 45},
+  //     {"item": "bills", "price": 200},
+  //     {"item": "Movies", "price": 150}
+  //   ]
+  // }
+  // ''';
+
+//   void getData() async {
+//   try {
+//     String fetchedData = await DatabaseService().mapUserExpenseSnapshotToChartJson();
+//     setState(() {
+//       jsonData = fetchedData;
+//     });
+//   } catch (error) {}
+// }
 
   @override
   Widget build(BuildContext context) {
-    Map<String, dynamic> jsonMap = json.decode(jsonData);
+
+    if (widget.jsonData.isEmpty) {
+      return const Center(child: CircularProgressIndicator(),);
+    }
+    
+    Map<String, dynamic> jsonMap = json.decode(widget.jsonData);
     List<dynamic> dataList = jsonMap['data'];
 
     String getItemAtIndex(int index) {
@@ -36,34 +58,47 @@ class _CustomBarChartState extends State<CustomBarChart> {
       }
     }
 
-    List<BarChartGroupData> getBarChartGroupData() {
-      List<BarChartGroupData> barChartGroup = [];
+  List<BarChartGroupData> getBarChartGroupData() {
+    Map<String, int> categoryTotals = {}; // Map to store category totals
 
-      for (int i = 0; i < dataList.length; i++) {
-        // String item = dataList[i]['item'];
-        int price = dataList[i]['price'];
-        barChartGroup.add(BarChartGroupData(
-          showingTooltipIndicators: [0],
-          x: i,
-          barRods: [
-            BarChartRodData(
-                color: Color.fromARGB(255, 49, 231, 119),
-                width: 10,
-                toY: price.toDouble(),
-                backDrawRodData: BackgroundBarChartRodData(
-                    color: const Color.fromARGB(255, 220, 15, 15),
-                    toY: 0.500,
-                    show: false))
-          ],
-        ));
+    for (int i = 0; i < dataList.length; i++) {
+      String item = dataList[i]['item'];
+      int? price = dataList[i]['price'] as int?;
+      // total price calculation
+      if (price != null) {
+        if (categoryTotals.containsKey(item)) {
+          categoryTotals[item] = (categoryTotals[item] ?? 0) + price;
+        } else {
+          categoryTotals[item] = price;
+        }
       }
-
-      return barChartGroup;
-
-      // return [
-      //   BarChartGroupData(x: 1, barRods: [BarChartRodData(toY: 40)])
-      // ];
     }
+
+    List<BarChartGroupData> barChartGroup = [];
+
+    //category wise bars
+    categoryTotals.forEach((item, total) {
+      barChartGroup.add(BarChartGroupData(
+        showingTooltipIndicators: [0],
+        x: barChartGroup.length,
+        barRods: [
+          BarChartRodData(
+            color: Color.fromARGB(255, 49, 231, 119),
+            width: 10,
+            toY: total.toDouble(),
+            backDrawRodData: BackgroundBarChartRodData(
+              color: const Color.fromARGB(255, 220, 15, 15),
+              toY: 0.500,
+              show: false,
+            ),
+          ),
+        ],
+      ));
+    });
+
+    return barChartGroup;
+  }
+
 
     double getMaxY() {
       return 250.0;
