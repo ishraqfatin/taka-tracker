@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:taka_tracker/models/expense.dart';
 import 'package:taka_tracker/widgets/bar_chart.dart';
@@ -22,8 +21,8 @@ class _DashboardScreenState extends State<StatefulWidget> {
   final currentUser = FirebaseAuth.instance.currentUser;
   final databaseService = DatabaseService();
   final firebase = FirebaseFirestore.instance;
-  String _selectedBarChartFilter = 'This month';
-  String _selectedExpenseListCategory = 'travel';
+  String _selectedBarChartFilter = 'This week';
+  String _selectedExpenseListCategory = 'categories';
 
   String jsonData = '';
 
@@ -33,7 +32,7 @@ class _DashboardScreenState extends State<StatefulWidget> {
     getChartData();
   }
 
-Query buildExpenseQuery(String selectedCategory) {
+  Query buildExpenseQuery(String selectedCategory) {
     Query<Map<String, dynamic>> query = firebase
         .collection('users')
         .doc(currentUser!.uid)
@@ -49,7 +48,6 @@ Query buildExpenseQuery(String selectedCategory) {
 
     return query;
   }
-
 
   void getChartData() async {
     try {
@@ -112,19 +110,35 @@ Query buildExpenseQuery(String selectedCategory) {
       ),
       appBar: AppBar(
         title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              greeting,
-              style: const TextStyle(fontSize: 20.0, color: Colors.white),
+            Row(
+              children: [
+                Text(
+                  greeting,
+                  style: const TextStyle(fontSize: 20.0, color: Colors.white),
+                ),
+                Text(
+                  currentUser!.displayName.toString(),
+                  style: const TextStyle(
+                    fontSize: 20.0,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
-            Text(
-              currentUser!.displayName.toString(),
-              style: const TextStyle(
-                fontSize: 20.0,
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
+            IconButton(
+              onPressed: () async {
+                final auth = FirebaseAuth.instance;
+
+                await auth.signOut();
+
+                // Navigate to Sign_in page
+                Navigator.popAndPushNamed(context, '/sign_in');
+              },
+              icon: const Icon(Icons.logout),
+              color: Colors.white,
             )
           ],
         ),
@@ -263,7 +277,7 @@ Query buildExpenseQuery(String selectedCategory) {
                     ), // EITA hocche draggable container er bg color
                     child: ListView(
                       controller: scrollController,
-                      children: <Widget>[ExpenseListDrawer()],
+                      children: <Widget>[expenseListDrawer()],
                     ),
                   ),
                 ))
@@ -318,17 +332,17 @@ Query buildExpenseQuery(String selectedCategory) {
             ),
             IconButton(
                 onPressed: () {
-                  Navigator.popAndPushNamed(context, '/menu');
+                  Navigator.popAndPushNamed(context, '/currency_converter');
                 },
                 color: const Color.fromARGB(255, 36, 46, 41),
-                icon: const Icon(Icons.menu)),
+                icon: const Icon(Icons.currency_exchange_outlined)),
           ],
         ),
       ),
     );
   }
 
-  Widget ExpenseListDrawer() {
+  Widget expenseListDrawer() {
     return Column(
       children: [
         const SizedBox(

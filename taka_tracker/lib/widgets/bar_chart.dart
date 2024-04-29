@@ -3,25 +3,27 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 class CustomBarChart extends StatefulWidget {
-final String jsonData;
+  final String jsonData;
 
-const CustomBarChart({super.key, required this.jsonData});
+  const CustomBarChart({super.key, required this.jsonData});
 
   @override
   State<CustomBarChart> createState() => _CustomBarChartState();
 }
 
 class _CustomBarChartState extends State<CustomBarChart> {
- 
   @override
   Widget build(BuildContext context) {
-
     if (widget.jsonData.isEmpty) {
-      return const Center(child: CircularProgressIndicator(),);
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
     }
-    
+
     Map<String, dynamic> jsonMap = json.decode(widget.jsonData);
     List<dynamic> dataList = jsonMap['data'];
+
+    Map<String, int> categoryTotals = {}; // Map to store category totals
 
     String getItemAtIndex(int index) {
       if (index >= 0 && index < dataList.length) {
@@ -31,11 +33,9 @@ class _CustomBarChartState extends State<CustomBarChart> {
       }
     }
 
-
-
     IconData getCategoryIcon(int index) {
       IconData iconData = Icons.error;
-      String category = dataList[index]['category']!;
+      String category = categoryTotals.keys.elementAt(index);
 
       switch (category) {
         case 'food':
@@ -57,47 +57,44 @@ class _CustomBarChartState extends State<CustomBarChart> {
       return iconData;
     }
 
-  List<BarChartGroupData> getBarChartGroupData() {
-    Map<String, int> categoryTotals = {}; // Map to store category totals
-
-    for (int i = 0; i < dataList.length; i++) {
-      String category = dataList[i]['category'];
-      int? price = dataList[i]['price'] as int?;
-      // total price calculation
-      if (price != null) {
-        if (categoryTotals.containsKey(category)) {
-          categoryTotals[category] = (categoryTotals[category] ?? 0) + price;
-        } else {
-          categoryTotals[category] = price;
+    List<BarChartGroupData> getBarChartGroupData() {
+      for (int i = 0; i < dataList.length; i++) {
+        String category = dataList[i]['category'];
+        int? price = dataList[i]['price'] as int?;
+        // total price calculation
+        if (price != null) {
+          if (categoryTotals.containsKey(category)) {
+            categoryTotals[category] = (categoryTotals[category] ?? 0) + price;
+          } else {
+            categoryTotals[category] = price;
+          }
         }
       }
-    }
 
-    List<BarChartGroupData> barChartGroup = [];
+      List<BarChartGroupData> barChartGroup = [];
 
-    //category wise bars
-    categoryTotals.forEach((category, total) {
-      barChartGroup.add(BarChartGroupData(
-        showingTooltipIndicators: [0],
-        x: barChartGroup.length,
-        barRods: [
-          BarChartRodData(
-            color: Color.fromARGB(255, 49, 231, 119),
-            width: 10,
-            toY: total.toDouble(),
-            backDrawRodData: BackgroundBarChartRodData(
-              color: const Color.fromARGB(255, 220, 15, 15),
-              toY: 0.500,
-              show: false,
+      //category wise bars
+      categoryTotals.forEach((category, total) {
+        barChartGroup.add(BarChartGroupData(
+          showingTooltipIndicators: [0],
+          x: barChartGroup.length,
+          barRods: [
+            BarChartRodData(
+              color: Color.fromARGB(255, 49, 231, 119),
+              width: 10,
+              toY: total.toDouble(),
+              backDrawRodData: BackgroundBarChartRodData(
+                color: const Color.fromARGB(255, 220, 15, 15),
+                toY: 0.500,
+                show: false,
+              ),
             ),
-          ),
-        ],
-      ));
-    });
+          ],
+        ));
+      });
 
-    return barChartGroup;
-  }
-
+      return barChartGroup;
+    }
 
     double getMaxY() {
       return 250.0;
@@ -129,12 +126,7 @@ class _CustomBarChartState extends State<CustomBarChart> {
                                   getCategoryIcon(value.toInt()),
                                   color: Colors.white,
                                 ),
-                              )
-                          //     Text(
-                          //   getItemAtIndex(value.toInt()),
-                          //   style: TextStyle(color: Colors.white),
-                          // ),
-                          )),
+                              ))),
                   topTitles: const AxisTitles(
                     sideTitles: SideTitles(showTitles: false),
                   ),

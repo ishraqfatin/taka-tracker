@@ -5,7 +5,7 @@ import 'package:taka_tracker/screens/dashboard.dart';
 import 'package:taka_tracker/screens/form.dart';
 import 'package:taka_tracker/screens/auth/sign_in.dart';
 import 'package:taka_tracker/screens/auth/sign_up.dart';
-import 'package:taka_tracker/screens/menu.dart';
+import 'package:taka_tracker/screens/currency_converter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
         '/sign_up': (context) => const SignUpScreen(),
         '/form': (context) => const FormScreen(),
         '/dashboard': (context) => const DashboardScreen(),
-        '/menu': (context) => const MenuScreen(),
+        '/currency_converter': (context) => const CurrencyConverterScreen(),
       },
     );
   }

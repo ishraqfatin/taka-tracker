@@ -49,8 +49,9 @@ class _FormScreenState extends State<FormScreen> {
             'Category.${widget.expense.data()["category"].toString()}')
         : Category.food;
 
-    selectedDate =
-        widget.expense != null ? widget.expense.data()["time"].toDate() : null;
+    selectedDate = widget.expense != null
+        ? widget.expense.data()["time"].toDate()
+        : DateTime.now();
   }
 
   void _presentDatePicker() async {
