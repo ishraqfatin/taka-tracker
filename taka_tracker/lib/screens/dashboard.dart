@@ -8,6 +8,8 @@ import 'package:taka_tracker/widgets/bar_chart.dart';
 import 'package:taka_tracker/services/database.dart';
 import 'form.dart';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
+import 'package:skeletonizer/skeletonizer.dart';
 
 final formatter = DateFormat.yMd();
 
@@ -24,6 +26,7 @@ class _DashboardScreenState extends State<StatefulWidget> {
   final firebase = FirebaseFirestore.instance;
   String _selectedBarChartFilter = 'week';
   String _selectedExpenseListCategory = 'categories';
+  String _selectedCurrency = 'bdt';
 
   String jsonData = '';
 
@@ -31,6 +34,7 @@ class _DashboardScreenState extends State<StatefulWidget> {
   void initState() {
     super.initState();
     getChartData();
+    getConvertedCurrency(1);
   }
 
   Query buildExpenseQuery(String selectedCategory) {
@@ -80,6 +84,62 @@ class _DashboardScreenState extends State<StatefulWidget> {
     'shopping',
   ];
 
+  final _currencyListItems = [
+    'bdt',
+    'usd',
+    'eur',
+    'gbp',
+    'cad',
+  ];
+
+  Future<String> getConvertedCurrency(int inputCurrency) async {
+    if (_selectedCurrency == 'bdt') {
+      return '$inputCurrency ৳';
+    }
+    // API endpoint for currency conversion
+    String apiUrl = 'https://api.exchangerate-api.com/v4/latest/BDT';
+
+    // Make API request to get currency exchange rates
+    final response = await http.get(Uri.parse(apiUrl));
+
+    if (response.statusCode == 200) {
+      // Parse response body
+      Map<String, dynamic> data = json.decode(response.body);
+
+      // Get conversion rate for selected currency
+      double conversionRate = _selectedCurrency == 'usd'
+          ? data['rates']['USD']
+          : _selectedCurrency == 'cad'
+              ? data['rates']['CAD']
+              : _selectedCurrency == 'gbp'
+                  ? data['rates']['GBP']
+                  : _selectedCurrency == 'eur'
+                      ? data['rates']['EUR']
+                      : 1.0; // Default to 1:1 conversion if selected currency is not supported
+
+      // Convert input currency to selected currency
+      double convertedValue = inputCurrency * conversionRate;
+
+      String formattedValue = convertedValue.toStringAsFixed(2);
+
+      // currency symbol
+      String currencySymbol = '';
+
+      if (_selectedCurrency == 'usd' || _selectedCurrency == 'cad') {
+        currencySymbol = '\$ ';
+      } else if (_selectedCurrency == 'gbp') {
+        currencySymbol = '£ ';
+      } else if (_selectedCurrency == 'eur') {
+        currencySymbol = '€ ';
+      }
+
+      return currencySymbol + formattedValue;
+    } else {
+      // If API request fails, return an empty string
+      return '';
+    }
+  }
+
   String _getGreeting() {
     var hour = DateTime.now().hour;
     if (hour < 12) {
@@ -109,38 +169,22 @@ class _DashboardScreenState extends State<StatefulWidget> {
       backgroundColor: const Color.fromARGB(170, 198, 227, 216),
       appBar: AppBar(
         title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Row(
-              children: [
-                Text(
-                  greeting,
-                  style: const TextStyle(fontSize: 20.0, color: Colors.white),
-                ),
-                Text(
-                  currentUser!.displayName.toString(),
-                  maxLines: 1,
-                  overflow: TextOverflow.fade,
-                  style: const TextStyle(
-                    fontSize: 20.0,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
+            Text(
+              greeting,
+              style: const TextStyle(fontSize: 20.0, color: Colors.white),
             ),
-            IconButton(
-              onPressed: () async {
-                final auth = FirebaseAuth.instance;
-
-                await auth.signOut();
-
-                // Navigate to Sign_in page
-                Navigator.popAndPushNamed(context, '/sign_in');
-              },
-              icon: const Icon(Icons.logout),
-              color: Colors.white,
-            )
+            Text(
+              currentUser!.displayName.toString(),
+              maxLines: 1,
+              overflow: TextOverflow.fade,
+              style: const TextStyle(
+                fontSize: 20.0,
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
         primary: true,
@@ -176,7 +220,8 @@ class _DashboardScreenState extends State<StatefulWidget> {
                         Text(
                           jsonData != ''
                               ? jsonDecode(jsonData)['totalAmount']
-                                  .toStringAsFixed(0)
+                                      .toStringAsFixed(0) +
+                                  ' ৳'
                               : "NA",
                           maxLines: 1,
                           overflow: TextOverflow.fade,
@@ -338,11 +383,36 @@ class _DashboardScreenState extends State<StatefulWidget> {
               ),
             ),
             IconButton(
-                onPressed: () {
-                  Navigator.popAndPushNamed(context, '/currency_converter');
-                },
-                color: const Color.fromARGB(255, 36, 46, 41),
-                icon: const Icon(Icons.currency_exchange_outlined)),
+              onPressed: () => showDialog<String>(
+                context: context,
+                builder: (BuildContext context) => AlertDialog(
+                  title: const Text('Singing out?'),
+                  content: const Text('Are you sure you want to leave?'),
+                  actions: <Widget>[
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, 'Cancel'),
+                      child: const Text('No'),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        final auth = FirebaseAuth.instance;
+
+                        await auth.signOut();
+
+                        // Navigate to Sign_in page
+                        Navigator.popAndPushNamed(context, '/sign_in');
+                      },
+                      child: const Text(
+                        'YES',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              icon: const Icon(Icons.logout),
+              color: const Color.fromARGB(255, 36, 46, 41),
+            )
           ],
         ),
       ),
@@ -369,37 +439,75 @@ class _DashboardScreenState extends State<StatefulWidget> {
                   fontFamily: 'Roboto',
                 ),
               ),
-              // DROP DOWN MENU
-              Container(
-                  width: 120,
-                  height: 40,
-                  decoration: const BoxDecoration(
-                      color: Color.fromARGB(251, 23, 65, 46),
-                      borderRadius: BorderRadius.all(Radius.circular(20))),
-                  child: Padding(
-                    padding: const EdgeInsets.only(
-                      left: 14.0,
-                    ),
-                    // Filter Expense List
-                    child: DropdownButton(
-                      dropdownColor: const Color.fromARGB(251, 23, 65, 46),
-                      items: _expenseListItems.map((String item) {
-                        return DropdownMenuItem(
-                            value: item, child: Text(item.toUpperCase()));
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedExpenseListCategory = value!;
-                        });
-                      },
-                      icon: const Icon(Icons.keyboard_arrow_down),
-                      value: _selectedExpenseListCategory,
-                      style: const TextStyle(color: Colors.white),
-                      underline: Container(),
-                      iconEnabledColor:
-                          const Color.fromARGB(255, 255, 255, 255),
-                    ),
-                  )),
+              Row(
+                children: [
+// CATEGORIES DROP DOWN MENU
+                  Container(
+                      width: 120,
+                      height: 40,
+                      decoration: const BoxDecoration(
+                          color: Color.fromARGB(251, 23, 65, 46),
+                          borderRadius: BorderRadius.all(Radius.circular(20))),
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          left: 14.0,
+                        ),
+                        // Filter Expense List
+                        child: DropdownButton(
+                          dropdownColor: const Color.fromARGB(251, 23, 65, 46),
+                          items: _expenseListItems.map((String item) {
+                            return DropdownMenuItem(
+                                value: item, child: Text(item.toUpperCase()));
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedExpenseListCategory = value!;
+                            });
+                          },
+                          icon: const Icon(Icons.keyboard_arrow_down),
+                          value: _selectedExpenseListCategory,
+                          style: const TextStyle(color: Colors.white),
+                          underline: Container(),
+                          iconEnabledColor:
+                              const Color.fromARGB(255, 255, 255, 255),
+                        ),
+                      )),
+                  const SizedBox(
+                    width: 6,
+                  ),
+                  // CURRENCY DROPDOWN
+                  Container(
+                      width: 70,
+                      height: 40,
+                      decoration: const BoxDecoration(
+                          color: Color.fromARGB(251, 23, 65, 46),
+                          borderRadius: BorderRadius.all(Radius.circular(20))),
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          left: 14.0,
+                        ),
+                        // Filter Expense List
+                        child: DropdownButton(
+                          dropdownColor: const Color.fromARGB(251, 23, 65, 46),
+                          items: _currencyListItems.map((String item) {
+                            return DropdownMenuItem(
+                                value: item, child: Text(item.toUpperCase()));
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedCurrency = value!;
+                            });
+                          },
+                          icon: const Icon(Icons.keyboard_arrow_down),
+                          value: _selectedCurrency,
+                          style: const TextStyle(color: Colors.white),
+                          underline: Container(),
+                          iconEnabledColor:
+                              const Color.fromARGB(255, 255, 255, 255),
+                        ),
+                      )),
+                ],
+              ),
             ],
           ),
         ),
@@ -511,6 +619,7 @@ class _DashboardScreenState extends State<StatefulWidget> {
                               )
                             ],
                           ),
+                          // EXPENSE CARD
                           child: Card(
                             margin: const EdgeInsets.all(10),
                             elevation: 20,
@@ -556,22 +665,51 @@ class _DashboardScreenState extends State<StatefulWidget> {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.end,
                                           children: [
-                                            Text(
-                                              overflow: TextOverflow.ellipsis,
-                                              maxLines: 1,
-                                              softWrap: false,
-                                              textAlign: TextAlign.end,
-                                              '${userExpensesData[index]['price']} TK',
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 20,
-                                                color: Color.fromARGB(
-                                                  255,
-                                                  198,
-                                                  227,
-                                                  216,
-                                                ),
-                                              ),
+                                            // Handle Future String for the currency converter
+                                            FutureBuilder<String>(
+                                              future: getConvertedCurrency(
+                                                  userExpensesData[index]
+                                                      ['price']),
+                                              builder: (context, snapshot) {
+                                                if (snapshot.connectionState ==
+                                                    ConnectionState.waiting) {
+                                                  return const Text(
+                                                    'Loading...',
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 20,
+                                                      color: Color.fromARGB(
+                                                        255,
+                                                        198,
+                                                        227,
+                                                        216,
+                                                      ),
+                                                    ),
+                                                  ); // Show loading indicator while fetching data
+                                                } else if (snapshot.hasError) {
+                                                  return Text(
+                                                      'Error: ${snapshot.error}');
+                                                } else {
+                                                  String convertedCurrency =
+                                                      snapshot.data ??
+                                                          ''; // Get converted currency value
+                                                  return Text(
+                                                    convertedCurrency, // Display converted currency value
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 20,
+                                                      color: Color.fromARGB(
+                                                        255,
+                                                        198,
+                                                        227,
+                                                        216,
+                                                      ),
+                                                    ),
+                                                  );
+                                                }
+                                              },
                                             ),
                                             Text(
                                               formatter.format(

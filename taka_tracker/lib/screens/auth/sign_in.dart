@@ -142,7 +142,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     ElevatedButton(
                       onPressed: () async {
                         FocusScope.of(context).unfocus();
-                        
+
                         if (ValidatorClass()
                                 .validateEmail(_emailController.text) !=
                             null) {
@@ -251,7 +251,6 @@ class _SignInScreenState extends State<SignInScreen> {
                               style:
                                   TextStyle(fontSize: 18, fontFamily: 'Roboto'),
                             ),
-                        
                     ),
                     const SizedBox(height: 20),
                     Row(
