@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -24,7 +25,7 @@ class _DashboardScreenState extends State<StatefulWidget> {
   final currentUser = FirebaseAuth.instance.currentUser;
   final databaseService = DatabaseService();
   final firebase = FirebaseFirestore.instance;
-  String _selectedBarChartFilter = 'This week';
+  String _selectedBarChartFilter = 'week';
   String _selectedExpenseListCategory = 'categories';
   String _selectedCurrency = 'bdt';
 
@@ -56,21 +57,24 @@ class _DashboardScreenState extends State<StatefulWidget> {
 
   void getChartData() async {
     try {
-      String fetchedData =
-          await DatabaseService().mapUserExpenseSnapshotToChartJson();
+      String fetchedData = await DatabaseService()
+          .mapUserExpenseSnapshotToChartJson(
+              timeRange: _selectedBarChartFilter);
 
-      setState(() {
-        jsonData = fetchedData;
-      });
+      setState(
+        () {
+          jsonData = fetchedData;
+        },
+      );
     } catch (error) {
       print(error);
     }
   }
 
   final _barCharItems = [
-    'This week',
-    'This month',
-    'This year',
+    'week',
+    'month',
+    'year',
   ];
 
   final _expenseListItems = [
@@ -152,12 +156,7 @@ class _DashboardScreenState extends State<StatefulWidget> {
     String greeting = _getGreeting();
 
     return Scaffold(
-      backgroundColor: const Color.fromARGB(
-        255,
-        198,
-        227,
-        216,
-      ),
+      backgroundColor: const Color.fromARGB(170, 198, 227, 216),
       appBar: AppBar(
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -170,6 +169,8 @@ class _DashboardScreenState extends State<StatefulWidget> {
                 ),
                 Text(
                   currentUser!.displayName.toString(),
+                  maxLines: 1,
+                  overflow: TextOverflow.fade,
                   style: const TextStyle(
                     fontSize: 20.0,
                     color: Colors.white,
@@ -216,16 +217,21 @@ class _DashboardScreenState extends State<StatefulWidget> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    const Column(
+                    Column(
                       children: [
-                        Text(
+                        const Text(
                           'You have spent',
                           style: TextStyle(fontSize: 16.0, color: Colors.white),
                         ),
                         Text(
-                          '2500 Tk',
-                          style: TextStyle(
-                            fontSize: 35.0,
+                          jsonData != ''
+                              ? jsonDecode(jsonData)['totalAmount']
+                                  .toStringAsFixed(0)
+                              : "NA",
+                          maxLines: 1,
+                          overflow: TextOverflow.fade,
+                          style: const TextStyle(
+                            fontSize: 32.0,
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                           ),
@@ -259,12 +265,13 @@ class _DashboardScreenState extends State<StatefulWidget> {
                           items: _barCharItems.map((String item) {
                             return DropdownMenuItem(
                               value: item,
-                              child: Text(item),
+                              child: Text("This " + item),
                             );
                           }).toList(),
                           onChanged: (value) {
                             setState(() {
                               _selectedBarChartFilter = value!;
+                              getChartData();
                             });
                           },
                           icon: const Icon(Icons.keyboard_arrow_down),
