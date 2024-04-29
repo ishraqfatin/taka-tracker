@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
-
 class CustomBarChart extends StatefulWidget {
 final String jsonData;
 
@@ -40,16 +39,16 @@ class _CustomBarChartState extends State<CustomBarChart> {
 
       switch (category) {
         case 'food':
-          iconData = Icons.restaurant_outlined;
+          iconData = Icons.lunch_dining;
           break;
-        case 'transport':
-          iconData = Icons.directions_car;
+        case 'travel':
+          iconData = Icons.emoji_transportation;
           break;
         case 'bills':
-          iconData = Icons.attach_money;
+          iconData = Icons.receipt_long;
           break;
-        case 'movies':
-          iconData = Icons.camera_outlined;
+        case 'shopping':
+          iconData = Icons.shopping_bag;
           break;
         default:
           break;

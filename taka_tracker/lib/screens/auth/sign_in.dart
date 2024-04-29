@@ -147,10 +147,21 @@ class _SignInScreenState extends State<SignInScreen> {
                                 .validateEmail(_emailController.text) !=
                             null) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              backgroundColor: Color.fromARGB(255, 144, 4, 4),
+                            SnackBar(
+                              backgroundColor:
+                                  const Color.fromARGB(255, 144, 4, 4),
                               showCloseIcon: true,
-                              content: Text('Enter a valid Email'),
+                              content: const Text('Enter a valid Email'),
+                              width: 280.0, // Width of the SnackBar.
+                              padding: const EdgeInsets.symmetric(
+                                horizontal:
+                                    8.0, // Inner padding for SnackBar content.
+                              ),
+                              behavior: SnackBarBehavior.floating,
+
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
                             ),
                           );
                           return;

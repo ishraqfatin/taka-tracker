@@ -1,9 +1,27 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
+
 UserExpense userExpenseFromMap(String str) => UserExpense.fromMap(json.decode(str));
 List<UserExpense> userExpenseListFromMap(String str) => List<UserExpense>.from(json.decode(str).map((x) => UserExpense.fromMap(x)));
 String userExpenseToMap(UserExpense data) => json.encode(data.toMap());
 String userExpenseListToMap(List<UserExpense> data) => json.encode(List<dynamic>.from(data.map((x) => x.toMap())));
+
+
+enum Category {
+  all,
+  food,
+  travel,
+  bills,
+  shopping,
+}
+
+const categoryIcons = {
+  Category.food: Icons.lunch_dining,
+  Category.travel: Icons.emoji_transportation,
+  Category.bills: Icons.receipt_long,
+  Category.shopping: Icons.shopping_bag,
+};
 
 class UserExpense {
   String name;

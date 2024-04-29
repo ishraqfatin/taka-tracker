@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:taka_tracker/models/expense.dart';
 import 'package:taka_tracker/widgets/bar_chart.dart';
@@ -21,6 +22,8 @@ class _DashboardScreenState extends State<StatefulWidget> {
   final currentUser = FirebaseAuth.instance.currentUser;
   final databaseService = DatabaseService();
   final firebase = FirebaseFirestore.instance;
+  String _selectedBarChartFilter = 'This month';
+  String _selectedExpenseListCategory = 'travel';
 
   String jsonData = '';
 
@@ -29,6 +32,24 @@ class _DashboardScreenState extends State<StatefulWidget> {
     super.initState();
     getChartData();
   }
+
+Query buildExpenseQuery(String selectedCategory) {
+    Query<Map<String, dynamic>> query = firebase
+        .collection('users')
+        .doc(currentUser!.uid)
+        .collection('expenses');
+
+    if (selectedCategory != 'categories') {
+      // Filter by category if a category is selected
+      query = query.where('category', isEqualTo: _selectedExpenseListCategory);
+    } else {
+      // Order by time (you can adjust this as needed)
+      query = query.orderBy('time', descending: true);
+    }
+
+    return query;
+  }
+
 
   void getChartData() async {
     try {
@@ -50,15 +71,12 @@ class _DashboardScreenState extends State<StatefulWidget> {
   ];
 
   final _expenseListItems = [
-    'Categories',
-    'Food',
-    'Transport',
-    'Bills',
-    'Movies',
+    'categories',
+    'food',
+    'travel',
+    'bills',
+    'shopping',
   ];
-
-  String _selectedBarChartFilter = 'This month';
-  String _selectedExpenseListItem = 'Categories';
 
   String _getGreeting() {
     var hour = DateTime.now().hour;
@@ -68,6 +86,16 @@ class _DashboardScreenState extends State<StatefulWidget> {
       return 'Good afternoon, ';
     } else {
       return 'Good evening, ';
+    }
+  }
+
+  Category getCategoryFromString(String categoryString) {
+    try {
+      return Category.values.firstWhere(
+        (e) => e.toString() == 'Category.$categoryString',
+      );
+    } catch (_) {
+      return Category.food;
     }
   }
 
@@ -194,7 +222,9 @@ class _DashboardScreenState extends State<StatefulWidget> {
             SizedBox(
               height: 220,
               child: jsonData != ""
-                  ? CustomBarChart(jsonData: jsonData)
+                  ? CustomBarChart(
+                      jsonData: jsonData,
+                    )
                   : const Column(
                       children: [
                         Text(
@@ -245,6 +275,10 @@ class _DashboardScreenState extends State<StatefulWidget> {
         onPressed: () {
           // Show the popup screen
           showModalBottomSheet(
+            scrollControlDisabledMaxHeightRatio: 0.8,
+            enableDrag: true,
+            showDragHandle: true,
+            elevation: 10,
             context: context,
             builder: (BuildContext context) =>
                 FormScreen(onExpenseAddedOrUpdated: () {
@@ -261,11 +295,11 @@ class _DashboardScreenState extends State<StatefulWidget> {
         ),
       ),
       bottomNavigationBar: BottomAppBar(
-        color: Color.fromARGB(255, 165, 198, 187),
+        color: const Color.fromARGB(255, 165, 198, 187),
         elevation: 20,
         height: 55,
         shape: const CircularNotchedRectangle(),
-        shadowColor: Color.fromARGB(255, 45, 50, 48),
+        shadowColor: const Color.fromARGB(255, 45, 50, 48),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
@@ -273,7 +307,7 @@ class _DashboardScreenState extends State<StatefulWidget> {
                 onPressed: () {
                   Navigator.popAndPushNamed(context, '/dashboard');
                 },
-                color: Color.fromARGB(255, 36, 46, 41),
+                color: const Color.fromARGB(255, 36, 46, 41),
                 icon: const Icon(Icons.home)),
             Opacity(
               opacity: .0,
@@ -286,7 +320,7 @@ class _DashboardScreenState extends State<StatefulWidget> {
                 onPressed: () {
                   Navigator.popAndPushNamed(context, '/menu');
                 },
-                color: Color.fromARGB(255, 36, 46, 41),
+                color: const Color.fromARGB(255, 36, 46, 41),
                 icon: const Icon(Icons.menu)),
           ],
         ),
@@ -325,18 +359,20 @@ class _DashboardScreenState extends State<StatefulWidget> {
                     padding: const EdgeInsets.only(
                       left: 14.0,
                     ),
+                    // Filter Expense List
                     child: DropdownButton(
-                      dropdownColor: Color.fromARGB(251, 23, 65, 46),
+                      dropdownColor: const Color.fromARGB(251, 23, 65, 46),
                       items: _expenseListItems.map((String item) {
-                        return DropdownMenuItem(value: item, child: Text(item));
+                        return DropdownMenuItem(
+                            value: item, child: Text(item.toUpperCase()));
                       }).toList(),
                       onChanged: (value) {
                         setState(() {
-                          _selectedExpenseListItem = value!;
+                          _selectedExpenseListCategory = value!;
                         });
                       },
                       icon: const Icon(Icons.keyboard_arrow_down),
-                      value: _selectedExpenseListItem,
+                      value: _selectedExpenseListCategory,
                       style: const TextStyle(color: Colors.white),
                       underline: Container(),
                       iconEnabledColor:
@@ -347,12 +383,7 @@ class _DashboardScreenState extends State<StatefulWidget> {
           ),
         ),
         StreamBuilder(
-          stream: firebase
-              .collection('users')
-              .doc(currentUser!.uid)
-              .collection('expenses')
-              .orderBy('time')
-              .snapshots(),
+          stream: buildExpenseQuery(_selectedExpenseListCategory).snapshots(),
           builder: (context, AsyncSnapshot snapshot) {
             if (snapshot.hasData) {
               var userExpensesData = snapshot.data.docs;
@@ -405,7 +436,6 @@ class _DashboardScreenState extends State<StatefulWidget> {
                                     price: userExpensesData[index]['price'],
                                   );
 
-
                                   databaseService
                                       .deleteExpense(userExpensesData[index].id)
                                       .then((value) {
@@ -413,11 +443,14 @@ class _DashboardScreenState extends State<StatefulWidget> {
                                     getChartData();
                                   });
 
+                                  ScaffoldMessenger.of(context)
+                                      .clearSnackBars(); // removes existing snackbars
+
                                   // Show Undo Snackbar
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       backgroundColor:
-                                          Color.fromARGB(255, 21, 21, 21),
+                                          const Color.fromARGB(255, 21, 21, 21),
                                       duration: const Duration(seconds: 5),
                                       content: const Text(
                                         "Expense Deleted",
@@ -446,7 +479,6 @@ class _DashboardScreenState extends State<StatefulWidget> {
                                                 // Update the jsonData
                                                 getChartData();
                                               },
-                                              
                                             );
                                           }),
                                     ),
@@ -461,7 +493,7 @@ class _DashboardScreenState extends State<StatefulWidget> {
                           child: Card(
                             margin: const EdgeInsets.all(10),
                             elevation: 20,
-                            color: Color.fromARGB(255, 36, 46, 41),
+                            color: const Color.fromARGB(255, 36, 46, 41),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 15, vertical: 12),
@@ -471,6 +503,18 @@ class _DashboardScreenState extends State<StatefulWidget> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
+                                      Icon(
+                                        categoryIcons[getCategoryFromString(
+                                          userExpensesData[index]['category']
+                                              .toString(),
+                                        )],
+                                        // size: 40,
+                                        color: const Color.fromARGB(
+                                            255, 216, 216, 216),
+                                      ),
+                                      const SizedBox(
+                                        width: 10,
+                                      ),
                                       SizedBox(
                                         width: 210,
                                         child: Text(
@@ -487,36 +531,41 @@ class _DashboardScreenState extends State<StatefulWidget> {
                                         ),
                                       ),
                                       Expanded(
-                                        child: Text(
-                                          textAlign: TextAlign.end,
-                                          '${userExpensesData[index]['price']} TK',
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 20,
-                                            color: Color.fromARGB(
-                                              255,
-                                              198,
-                                              227,
-                                              216,
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                              softWrap: false,
+                                              textAlign: TextAlign.end,
+                                              '${userExpensesData[index]['price']} TK',
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 20,
+                                                color: Color.fromARGB(
+                                                  255,
+                                                  198,
+                                                  227,
+                                                  216,
+                                                ),
+                                              ),
                                             ),
-                                          ),
+                                            Text(
+                                              formatter.format(
+                                                  userExpensesData[index]
+                                                          ['time']
+                                                      .toDate()),
+                                              style: const TextStyle(
+                                                  color: Color.fromARGB(
+                                                      255, 232, 232, 232)),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ],
                                   ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                        formatter.format(userExpensesData[index]
-                                                ['time']
-                                            .toDate()),
-                                        style: const TextStyle(
-                                            color: Color.fromARGB(
-                                                255, 232, 232, 232)),
-                                      ),
-                                    ],
-                                  )
                                 ],
                               ),
                             ),
