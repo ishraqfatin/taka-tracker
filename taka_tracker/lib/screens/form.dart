@@ -76,7 +76,10 @@ class _FormScreenState extends State<FormScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const Text('Add Expense'),
+        title: const Text(
+                  "Add an expense!",
+                  style: TextStyle(fontSize: 20.0, color:  Color.fromARGB(255, 238, 245, 244),),
+                ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -86,7 +89,8 @@ class _FormScreenState extends State<FormScreen> {
             children: [
               TextFormField(
                 controller: nameController,
-                decoration: const InputDecoration(labelText: 'Name'),
+                style: const TextStyle(color: Color.fromARGB(255, 219, 228, 225), fontSize: 21),
+                decoration: const InputDecoration(labelText: 'Name', labelStyle: TextStyle(color: Color.fromARGB(255, 219, 228, 225), fontSize: 18)),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter a name';
@@ -97,7 +101,11 @@ class _FormScreenState extends State<FormScreen> {
               const SizedBox(
                 height: 12,
               ),
-              DropdownButtonFormField(
+               Theme(
+                data: Theme.of(context).copyWith(
+                  canvasColor: Color.fromARGB(255, 25, 71, 54), 
+                ),
+              child: DropdownButtonFormField(
                 value: _selectedCategory,
                 items: Category.values
                     .map(
@@ -105,7 +113,7 @@ class _FormScreenState extends State<FormScreen> {
                         value: el,
                         child: Text(
                           el.name.toUpperCase(),
-                          style: Theme.of(context).textTheme.bodyMedium,
+                          style: const TextStyle(color: Color.fromARGB(255, 219, 228, 225)), 
                         ),
                       ),
                     )
@@ -126,6 +134,20 @@ class _FormScreenState extends State<FormScreen> {
                   }
                   return null;
                 },
+                 decoration: const InputDecoration(
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Color.fromARGB(140, 219, 228, 225), 
+                    ),
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(
+                      color: Color.fromARGB(140, 219, 228, 225),
+                    ),
+                  ),
+                ),
+
+              ),
               ),
               // DropdownButtonFormField<String>(
               //   value: selectedCategory.isEmpty ? "Food" : selectedCategory,
@@ -153,7 +175,8 @@ class _FormScreenState extends State<FormScreen> {
                       controller: priceController,
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
-                      decoration: const InputDecoration(labelText: 'Price'),
+                          style: const TextStyle(color: Color.fromARGB(255, 219, 228, 225), fontSize: 21),
+                      decoration: const InputDecoration(labelText: 'Price', labelStyle: TextStyle(color: Color.fromARGB(255, 219, 228, 225), fontSize: 18)),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter a price';
@@ -179,7 +202,7 @@ class _FormScreenState extends State<FormScreen> {
                           shape: MaterialStatePropertyAll(
                               ContinuousRectangleBorder(
                                   borderRadius:
-                                      BorderRadius.all(Radius.circular(10))))),
+                                      BorderRadius.all(Radius.circular(30))))),
                       onPressed: _presentDatePicker,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -190,7 +213,8 @@ class _FormScreenState extends State<FormScreen> {
                                 ? 'No date selected!'
                                 : formatter.format(selectedDate!),
                             style: const TextStyle(
-                              color: Color.fromARGB(255, 169, 17, 6),
+                              color: Color.fromARGB(255, 8, 35, 37),
+                              fontSize: 17
                             ),
                           ),
                           IconButton(
@@ -270,7 +294,7 @@ class _FormScreenState extends State<FormScreen> {
                           widget.onExpenseAddedOrUpdated!();
                         } else {}
                       },
-                      child: const Text('Submit'),
+                      child: const Text('Submit', style: TextStyle(color: Color.fromARGB(255, 8, 35, 37), fontSize: 15),),
                     )
                   //UPDATE
                   : ElevatedButton(
@@ -296,6 +320,7 @@ class _FormScreenState extends State<FormScreen> {
           ),
         ),
       ),
+      backgroundColor: Color.fromARGB(255, 10, 23, 12),
     );
   }
 }
