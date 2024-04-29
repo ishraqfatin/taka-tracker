@@ -9,7 +9,6 @@ String userExpenseListToMap(List<UserExpense> data) => json.encode(List<dynamic>
 
 
 enum Category {
-  all,
   food,
   travel,
   bills,

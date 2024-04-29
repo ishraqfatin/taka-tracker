@@ -108,19 +108,20 @@ class _FormScreenState extends State<FormScreen> {
               ),
                Theme(
                 data: Theme.of(context).copyWith(
-                  canvasColor: Color.fromARGB(255, 25, 71, 54), 
+                  canvasColor: const Color.fromARGB(255, 25, 71, 54), 
                 ),
               child: DropdownButtonFormField(
                 value: _selectedCategory,
                 items: Category.values
                     .map(
-                      (el) => DropdownMenuItem(
-                        value: el,
+                        (el) => DropdownMenuItem(
+                          value: el,
                         child: Text(
                           el.name.toUpperCase(),
                           style: const TextStyle(color: Color.fromARGB(255, 219, 228, 225)), 
                         ),
                       ),
+                      
                     )
                     .toList(),
                 onChanged: (value) {
@@ -212,11 +213,13 @@ class _FormScreenState extends State<FormScreen> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
-                            selectedDate == null
-                                ? 'No date selected!'
-                                : formatter.format(selectedDate!),
-                            style: const TextStyle(
-                              color:  Color.fromARGB(255, 219, 228, 225),
+                            selectedDate != null
+                                ? formatter.format(selectedDate!)
+                                : "Pick a Date!",
+                            style: TextStyle(
+                                color: selectedDate != null
+                                    ? const Color.fromARGB(255, 219, 228, 225)
+                                    : Colors.red,
                               fontSize: 17
                             ),
                           ),
