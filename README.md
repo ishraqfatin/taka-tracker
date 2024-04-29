@@ -57,4 +57,4 @@ Added functionalities include:
 
 ### New Expense Form:
 
-![](--link--)
+![](screenshots/new-expense-form.png)
