@@ -7,6 +7,9 @@ import 'package:taka_tracker/widgets/bar_chart.dart';
 import 'package:taka_tracker/services/database.dart';
 import 'form.dart';
 import 'package:intl/intl.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:skeletonizer/skeletonizer.dart';
 
 final formatter = DateFormat.yMd();
 
@@ -23,6 +26,7 @@ class _DashboardScreenState extends State<StatefulWidget> {
   final firebase = FirebaseFirestore.instance;
   String _selectedBarChartFilter = 'This week';
   String _selectedExpenseListCategory = 'categories';
+  String _selectedCurrency = 'bdt';
 
   String jsonData = '';
 
@@ -30,6 +34,7 @@ class _DashboardScreenState extends State<StatefulWidget> {
   void initState() {
     super.initState();
     getChartData();
+    getConvertedCurrency(1);
   }
 
   Query buildExpenseQuery(String selectedCategory) {
@@ -75,6 +80,51 @@ class _DashboardScreenState extends State<StatefulWidget> {
     'bills',
     'shopping',
   ];
+
+  final _currencyListItems = [
+    'bdt',
+    'usd',
+    'eur',
+    'gbp',
+    'cad',
+  ];
+
+  Future<String> getConvertedCurrency(int inputCurrency) async {
+    if (_selectedCurrency == 'bdt') {
+      return inputCurrency.toString();
+    }
+    // API endpoint for currency conversion
+    String apiUrl = 'https://api.exchangerate-api.com/v4/latest/BDT';
+
+    // Make API request to get currency exchange rates
+    final response = await http.get(Uri.parse(apiUrl));
+
+    if (response.statusCode == 200) {
+      // Parse response body
+      Map<String, dynamic> data = json.decode(response.body);
+
+      // Get conversion rate for selected currency
+      double conversionRate = _selectedCurrency == 'usd'
+          ? data['rates']['USD']
+          : _selectedCurrency == 'cad'
+              ? data['rates']['CAD']
+              : _selectedCurrency == 'gbp'
+                  ? data['rates']['GBP']
+                  : _selectedCurrency == 'eur'
+                      ? data['rates']['EUR']
+                      : 1.0; // Default to 1:1 conversion if selected currency is not supported
+
+      // Convert input currency to selected currency
+      double convertedValue = inputCurrency * conversionRate;
+
+      String formattedValue = convertedValue.toStringAsFixed(2);
+
+      return formattedValue;
+    } else {
+      // If API request fails, return an empty string
+      return '';
+    }
+  }
 
   String _getGreeting() {
     var hour = DateTime.now().hour;
@@ -362,37 +412,75 @@ class _DashboardScreenState extends State<StatefulWidget> {
                   fontFamily: 'Roboto',
                 ),
               ),
-              // DROP DOWN MENU
-              Container(
-                  width: 120,
-                  height: 40,
-                  decoration: const BoxDecoration(
-                      color: Color.fromARGB(251, 23, 65, 46),
-                      borderRadius: BorderRadius.all(Radius.circular(20))),
-                  child: Padding(
-                    padding: const EdgeInsets.only(
-                      left: 14.0,
-                    ),
-                    // Filter Expense List
-                    child: DropdownButton(
-                      dropdownColor: const Color.fromARGB(251, 23, 65, 46),
-                      items: _expenseListItems.map((String item) {
-                        return DropdownMenuItem(
-                            value: item, child: Text(item.toUpperCase()));
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedExpenseListCategory = value!;
-                        });
-                      },
-                      icon: const Icon(Icons.keyboard_arrow_down),
-                      value: _selectedExpenseListCategory,
-                      style: const TextStyle(color: Colors.white),
-                      underline: Container(),
-                      iconEnabledColor:
-                          const Color.fromARGB(255, 255, 255, 255),
-                    ),
-                  )),
+              Row(
+                children: [
+// CATEGORIES DROP DOWN MENU
+                  Container(
+                      width: 120,
+                      height: 40,
+                      decoration: const BoxDecoration(
+                          color: Color.fromARGB(251, 23, 65, 46),
+                          borderRadius: BorderRadius.all(Radius.circular(20))),
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          left: 14.0,
+                        ),
+                        // Filter Expense List
+                        child: DropdownButton(
+                          dropdownColor: const Color.fromARGB(251, 23, 65, 46),
+                          items: _expenseListItems.map((String item) {
+                            return DropdownMenuItem(
+                                value: item, child: Text(item.toUpperCase()));
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedExpenseListCategory = value!;
+                            });
+                          },
+                          icon: const Icon(Icons.keyboard_arrow_down),
+                          value: _selectedExpenseListCategory,
+                          style: const TextStyle(color: Colors.white),
+                          underline: Container(),
+                          iconEnabledColor:
+                              const Color.fromARGB(255, 255, 255, 255),
+                        ),
+                      )),
+                  const SizedBox(
+                    width: 6,
+                  ),
+                  // CURRENCY DROPDOWN
+                  Container(
+                      width: 70,
+                      height: 40,
+                      decoration: const BoxDecoration(
+                          color: Color.fromARGB(251, 23, 65, 46),
+                          borderRadius: BorderRadius.all(Radius.circular(20))),
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          left: 14.0,
+                        ),
+                        // Filter Expense List
+                        child: DropdownButton(
+                          dropdownColor: const Color.fromARGB(251, 23, 65, 46),
+                          items: _currencyListItems.map((String item) {
+                            return DropdownMenuItem(
+                                value: item, child: Text(item.toUpperCase()));
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedCurrency = value!;
+                            });
+                          },
+                          icon: const Icon(Icons.keyboard_arrow_down),
+                          value: _selectedCurrency,
+                          style: const TextStyle(color: Colors.white),
+                          underline: Container(),
+                          iconEnabledColor:
+                              const Color.fromARGB(255, 255, 255, 255),
+                        ),
+                      )),
+                ],
+              ),
             ],
           ),
         ),
@@ -504,6 +592,7 @@ class _DashboardScreenState extends State<StatefulWidget> {
                               )
                             ],
                           ),
+                          // EXPENSE CARD
                           child: Card(
                             margin: const EdgeInsets.all(10),
                             elevation: 20,
@@ -549,22 +638,38 @@ class _DashboardScreenState extends State<StatefulWidget> {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.end,
                                           children: [
-                                            Text(
-                                              overflow: TextOverflow.ellipsis,
-                                              maxLines: 1,
-                                              softWrap: false,
-                                              textAlign: TextAlign.end,
-                                              '${userExpensesData[index]['price']} TK',
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 20,
-                                                color: Color.fromARGB(
-                                                  255,
-                                                  198,
-                                                  227,
-                                                  216,
-                                                ),
-                                              ),
+                                            // Handle Future String for the currency converter
+                                            FutureBuilder<String>(
+                                              future: getConvertedCurrency(
+                                                  userExpensesData[index]
+                                                      ['price']),
+                                              builder: (context, snapshot) {
+                                                if (snapshot.connectionState ==
+                                                    ConnectionState.waiting) {
+                                                  return const LinearProgressIndicator(); // Show loading indicator while fetching data
+                                                } else if (snapshot.hasError) {
+                                                  return Text(
+                                                      'Error: ${snapshot.error}');
+                                                } else {
+                                                  String convertedCurrency =
+                                                      snapshot.data ??
+                                                          ''; // Get converted currency value
+                                                  return Text(
+                                                    convertedCurrency, // Display converted currency value
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 20,
+                                                      color: Color.fromARGB(
+                                                        255,
+                                                        198,
+                                                        227,
+                                                        216,
+                                                      ),
+                                                    ),
+                                                  );
+                                                }
+                                              },
                                             ),
                                             Text(
                                               formatter.format(
