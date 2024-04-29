@@ -8,7 +8,6 @@ import 'package:taka_tracker/widgets/bar_chart.dart';
 import 'package:taka_tracker/services/database.dart';
 import 'form.dart';
 import 'package:intl/intl.dart';
-import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -95,7 +94,7 @@ class _DashboardScreenState extends State<StatefulWidget> {
 
   Future<String> getConvertedCurrency(int inputCurrency) async {
     if (_selectedCurrency == 'bdt') {
-      return inputCurrency.toString();
+      return '$inputCurrency ৳';
     }
     // API endpoint for currency conversion
     String apiUrl = 'https://api.exchangerate-api.com/v4/latest/BDT';
@@ -123,7 +122,18 @@ class _DashboardScreenState extends State<StatefulWidget> {
 
       String formattedValue = convertedValue.toStringAsFixed(2);
 
-      return formattedValue;
+      // currency symbol
+      String currencySymbol = '';
+
+      if (_selectedCurrency == 'usd' || _selectedCurrency == 'cad') {
+        currencySymbol = '\$ ';
+      } else if (_selectedCurrency == 'gbp') {
+        currencySymbol = '£ ';
+      } else if (_selectedCurrency == 'eur') {
+        currencySymbol = '€ ';
+      }
+
+      return currencySymbol + formattedValue;
     } else {
       // If API request fails, return an empty string
       return '';
@@ -226,7 +236,8 @@ class _DashboardScreenState extends State<StatefulWidget> {
                         Text(
                           jsonData != ''
                               ? jsonDecode(jsonData)['totalAmount']
-                                  .toStringAsFixed(0)
+                                      .toStringAsFixed(0) +
+                                  ' ৳'
                               : "NA",
                           maxLines: 1,
                           overflow: TextOverflow.fade,
@@ -653,7 +664,20 @@ class _DashboardScreenState extends State<StatefulWidget> {
                                               builder: (context, snapshot) {
                                                 if (snapshot.connectionState ==
                                                     ConnectionState.waiting) {
-                                                  return const LinearProgressIndicator(); // Show loading indicator while fetching data
+                                                  return const Text(
+                                                    'Loading...',
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 20,
+                                                      color: Color.fromARGB(
+                                                        255,
+                                                        198,
+                                                        227,
+                                                        216,
+                                                      ),
+                                                    ),
+                                                  ); // Show loading indicator while fetching data
                                                 } else if (snapshot.hasError) {
                                                   return Text(
                                                       'Error: ${snapshot.error}');
