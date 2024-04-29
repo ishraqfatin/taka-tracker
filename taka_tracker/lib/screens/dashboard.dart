@@ -169,38 +169,22 @@ class _DashboardScreenState extends State<StatefulWidget> {
       backgroundColor: const Color.fromARGB(170, 198, 227, 216),
       appBar: AppBar(
         title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Row(
-              children: [
-                Text(
-                  greeting,
-                  style: const TextStyle(fontSize: 20.0, color: Colors.white),
-                ),
-                Text(
-                  currentUser!.displayName.toString(),
-                  maxLines: 1,
-                  overflow: TextOverflow.fade,
-                  style: const TextStyle(
-                    fontSize: 20.0,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
+            Text(
+              greeting,
+              style: const TextStyle(fontSize: 20.0, color: Colors.white),
             ),
-            IconButton(
-              onPressed: () async {
-                final auth = FirebaseAuth.instance;
-
-                await auth.signOut();
-
-                // Navigate to Sign_in page
-                Navigator.popAndPushNamed(context, '/sign_in');
-              },
-              icon: const Icon(Icons.logout),
-              color: Colors.white,
-            )
+            Text(
+              currentUser!.displayName.toString(),
+              maxLines: 1,
+              overflow: TextOverflow.fade,
+              style: const TextStyle(
+                fontSize: 20.0,
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
         primary: true,
@@ -399,11 +383,36 @@ class _DashboardScreenState extends State<StatefulWidget> {
               ),
             ),
             IconButton(
-                onPressed: () {
-                  Navigator.popAndPushNamed(context, '/currency_converter');
-                },
-                color: const Color.fromARGB(255, 36, 46, 41),
-                icon: const Icon(Icons.currency_exchange_outlined)),
+              onPressed: () => showDialog<String>(
+                context: context,
+                builder: (BuildContext context) => AlertDialog(
+                  title: const Text('Singing out?'),
+                  content: const Text('Are you sure you want to leave?'),
+                  actions: <Widget>[
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, 'Cancel'),
+                      child: const Text('No'),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        final auth = FirebaseAuth.instance;
+
+                        await auth.signOut();
+
+                        // Navigate to Sign_in page
+                        Navigator.popAndPushNamed(context, '/sign_in');
+                      },
+                      child: const Text(
+                        'YES',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              icon: const Icon(Icons.logout),
+              color: const Color.fromARGB(255, 36, 46, 41),
+            )
           ],
         ),
       ),
