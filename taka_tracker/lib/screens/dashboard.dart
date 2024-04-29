@@ -298,7 +298,7 @@ class _DashboardScreenState extends State<StatefulWidget> {
           showModalBottomSheet(
             scrollControlDisabledMaxHeightRatio: 0.8,
             enableDrag: true,
-            showDragHandle: true,
+            showDragHandle: false,
             elevation: 10,
             context: context,
             builder: (BuildContext context) =>

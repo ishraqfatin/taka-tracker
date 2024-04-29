@@ -193,16 +193,14 @@ class _FormScreenState extends State<FormScreen> {
                   ),
                   Expanded(
                     child: ElevatedButton(
-                      style: const ButtonStyle(
-                          padding: MaterialStatePropertyAll(
-                            EdgeInsets.only(
-                              left: 20,
-                            ),
-                          ),
-                          shape: MaterialStatePropertyAll(
-                              ContinuousRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(30))))),
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: const  Color.fromARGB(255, 25, 71, 54),
+                        padding: const EdgeInsets.symmetric(vertical: 5),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
                       onPressed: _presentDatePicker,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -213,7 +211,7 @@ class _FormScreenState extends State<FormScreen> {
                                 ? 'No date selected!'
                                 : formatter.format(selectedDate!),
                             style: const TextStyle(
-                              color: Color.fromARGB(255, 8, 35, 37),
+                              color:  Color.fromARGB(255, 219, 228, 225),
                               fontSize: 17
                             ),
                           ),
@@ -230,7 +228,14 @@ class _FormScreenState extends State<FormScreen> {
               const SizedBox(height: 16.0),
               widget.expense == null
                   //ADD
-                  ? ElevatedButton(
+                  ? ElevatedButton(style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: const  Color.fromARGB(255, 25, 71, 54),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
                       onPressed: () {
                         int price = int.tryParse(priceController.text) ?? 0;
 
@@ -294,10 +299,17 @@ class _FormScreenState extends State<FormScreen> {
                           widget.onExpenseAddedOrUpdated!();
                         } else {}
                       },
-                      child: const Text('Submit', style: TextStyle(color: Color.fromARGB(255, 8, 35, 37), fontSize: 15),),
+                      child: const Text('Submit', style: TextStyle(color: Color.fromARGB(255, 219, 228, 225), fontSize: 15),),
                     )
                   //UPDATE
-                  : ElevatedButton(
+                  : ElevatedButton(style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: const  Color.fromARGB(255, 25, 71, 54),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
                       onPressed: () {
                         int price = int.tryParse(priceController.text) ?? 0;
 
@@ -320,7 +332,7 @@ class _FormScreenState extends State<FormScreen> {
           ),
         ),
       ),
-      backgroundColor: Color.fromARGB(255, 10, 23, 12),
+      backgroundColor: Color.fromARGB(255, 36, 46, 41),
     );
   }
 }
