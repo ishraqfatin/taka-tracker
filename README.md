@@ -2,20 +2,6 @@
 
 A Flutter app for tracking your expenses
 
-### Course: Mobile Applications
-
-### Semester: Spring 2024
-
-### Section: 03
-
-### Group 1
-
-### Team Members:
-
-- [1911116](https://github.com/ishraqfatin) - Fatin Ishraq Ahammed
-- [1910279](https://github.com/RHShihab) - Rahat Hasan Shihab
-- [1911041](https://github.com/JoyitaF) - Joyita Faruk
-
 ## Project Description and Scopes:
 
 This is an expense tracking app with the convenience of viewing your expenses at a glance.
